@@ -37,18 +37,21 @@ export function Home() {
                     title="Rotas Salvas"
                     description="Veja e gerencie suas rotas."
                     icon="folder-open-outline"
+                    // onPress={() => navigation.navigate("Rotas")}
                 />
 
                 <Card
                     title="Histórico"
                     description="Acompanhe suas rotas realizadas."
                     icon="time-outline"
+                    onPress={() => navigation.navigate("Histórico")}
                 />
 
                 <Card
                     title="Favoritos"
                     description="Suas rotas favoritas."
                     icon="star-outline"
+                    // onPress={() => navigation.navigate("Rotas")}
                 />
             </ScrollView>
         </SafeAreaView>

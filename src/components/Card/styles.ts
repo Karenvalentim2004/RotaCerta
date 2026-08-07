@@ -10,7 +10,8 @@ export const styles = StyleSheet.create({
         flexDirection: "row",
         justifyContent: "space-between",
         alignItems: "center",
-        marginBottom: 16,
+        marginBottom: 10,
+        marginTop: 8,
         shadowColor: "#000",
         shadowOpacity: 0.06,
         shadowRadius: 8,
@@ -22,7 +23,8 @@ export const styles = StyleSheet.create({
     },
 
     highlightedContainer: {
-        backgroundColor: colors.green[500],
+        backgroundColor: colors.green[700],
+        marginBottom: 60,
     },
 
     title: {

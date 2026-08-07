@@ -60,7 +60,7 @@ export function Card({
                 <Ionicons
                     name={icon}
                     size={26}
-                    color={colors.green[500]}
+                    color={colors.green[700]}
                 />
             )}
         </Pressable>

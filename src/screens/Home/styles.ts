@@ -9,7 +9,8 @@ export const styles = StyleSheet.create({
 
     content: {
         paddingHorizontal: 20,
-        paddingTop: 24,
+        paddingTop: 90,
         paddingBottom: 30,
+        
     },
 });

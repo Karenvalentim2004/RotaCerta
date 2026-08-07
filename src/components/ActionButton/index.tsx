@@ -24,7 +24,7 @@ export function ActionButton({
             <Ionicons
                 name={icon}
                 size={22}
-                color={colors.green[500]}
+                color={colors.green[700]}
             />
         </Pressable>
     );

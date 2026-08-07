@@ -1,5 +1,6 @@
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { Ionicons } from "@expo/vector-icons";
+import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
 
 import { Home } from "../screens/Home";
 import { CreateRoute } from "../screens/CreateRoute";
@@ -16,14 +17,14 @@ export function Tabs() {
             screenOptions={{
                 headerShown: false,
 
-                tabBarActiveTintColor: colors.green[500],
+                tabBarActiveTintColor: colors.green[700],
 
                 tabBarInactiveTintColor: colors.gray[500],
 
                 tabBarStyle: {
-                    height: 70,
+                    height: 90,
                     paddingBottom: 8,
-                    paddingTop: 8,
+                    paddingTop: 10,
                 },
             }}
         >
@@ -42,7 +43,7 @@ export function Tabs() {
                 component={CreateRoute}
                 options={{
                     tabBarIcon: ({ color, size }) => (
-                        <Ionicons name="navigate-outline" color={color} size={size} />
+                        <FontAwesome5 name="route" color={color} size={size} />
                     ),
                 }}
             />

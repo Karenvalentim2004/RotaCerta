@@ -31,7 +31,7 @@ export function Header({
                 <Ionicons
                     name="person"
                     size={28}
-                    color={colors.green[500]}
+                    color={colors.green[700]}
                 />
             </View>
         </View>

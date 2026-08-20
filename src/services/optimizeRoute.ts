@@ -8,6 +8,15 @@ export interface RouteDestination {
     complemento?: string | null;
 }
 
+export interface RoutePoint {
+    ordem: number;
+    tipo: "ORIGEM" | "ENTREGA" | "DESTINO_FINAL";
+    enderecoFormatado: string;
+    destinatario?: string | null;
+    latitude: number;
+    longitude: number;
+}
+
 export interface OptimizedRoute {
     distanciaTotalKm: number;
     custoEstimadoCombustivel: number;

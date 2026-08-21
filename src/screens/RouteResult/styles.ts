@@ -1,175 +1,134 @@
-import { StyleSheet } from "react-native";
-import { colors } from "../../theme/colors";
+import {
+    StyleSheet,
+} from "react-native";
 
-export const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        backgroundColor: colors.gray[100],
-    },
+import {
+    colors,
+} from "@/theme/colors";
 
-    content: {
-        padding: 20,
-        paddingTop: 50,
-        paddingBottom: 40,
-    },
+export const styles =
+    StyleSheet.create({
 
-    title: {
-        fontSize: 24,
-        fontWeight: "700",
-        color: colors.gray[900],
-    },
+        container: {
+            flex: 1,
+            backgroundColor:
+                colors.gray[100],
+            paddingHorizontal: 10,
+        },
 
-    subtitle: {
-        fontSize: 15,
-        color: colors.gray[600],
-        marginTop: 6,
-        marginBottom: 20,
-    },
+        // CABEÇALHO
 
-    mapContainer: {
-        height: 300,
-        backgroundColor: colors.gray[300],
-        borderRadius: 22,
-        overflow: "hidden",
-    },
+        header: {
+            height: 62,
+            backgroundColor:
+                colors.gray[100],
+            flexDirection: "row",
+            alignItems: "center",
+            justifyContent:
+                "space-between",
+        },
 
-    map: {
-        width: "100%",
-        height: "100%",
-    },
+        headerButton: {
+            width: 42,
+            height: 42,
+            alignItems: "center",
+            justifyContent: "center",
+        },
 
-    mapLoading: {
-        flex: 1,
-        justifyContent: "center",
-        alignItems: "center",
-        padding: 20,
-    },
+        headerTitle: {
+            fontSize: 13,
+            fontWeight: "700",
+            color: colors.black,
+        },
 
-    mapLoadingText: {
-        marginTop: 10,
-        fontSize: 14,
-        color: colors.gray[600],
-        textAlign: "center",
-    },
+        // MAPA
 
-    infoContainer: {
-        flexDirection: "row",
-        flexWrap: "wrap",
-        justifyContent: "space-between",
-        marginTop: 18,
-    },
+        mapContainer: {
+            height: 250,
+            backgroundColor:
+                "#DCE5D7",
+            justifyContent: "center",
+            alignItems: "center",
+            overflow: "hidden",
+        },
 
-    infoCard: {
-        width: "48%",
-        backgroundColor: colors.white,
-        borderRadius: 16,
-        padding: 16,
-        marginBottom: 12,
-    },
+        mapText: {
+            fontSize: 16,
+            fontWeight: "700",
+            color: colors.gray[100],
+        },
 
-    infoValue: {
-        fontSize: 20,
-        fontWeight: "700",
-        color: colors.green[700],
-    },
+        mapSubtext: {
+            fontSize: 13,
+            marginTop: 6,
+            color: colors.gray[100],
+        },
 
-    infoLabel: {
-        fontSize: 13,
-        color: colors.gray[600],
-        marginTop: 4,
-    },
+        // INFORMAÇÕES
 
-    summaryContainer: {
-        backgroundColor: colors.white,
-        borderRadius: 20,
-        padding: 18,
-        marginTop: 8,
-    },
+        infoContainer: {
+            flexDirection: "row",
+            flexWrap: "wrap",
+            justifyContent:
+                "space-between",
+            paddingHorizontal: 10,
+            marginTop: 28,
+        },
 
-    summaryTitle: {
-        fontSize: 18,
-        fontWeight: "700",
-        color: colors.gray[900],
-        marginBottom: 8,
-    },
+        infoCard: {
+            width: "48%",
+            height: 62,
+            backgroundColor:
+                colors.white,
+            borderRadius: 12,
+            paddingHorizontal: 10,
+            paddingVertical: 10,
 
-    summaryText: {
-        fontSize: 14,
-        lineHeight: 21,
-        color: colors.gray[600],
-    },
+            marginBottom: 18,
 
-    routeContainer: {
-        backgroundColor: colors.white,
-        borderRadius: 20,
-        padding: 18,
-        marginTop: 16,
-    },
+            elevation: 3,
 
-    routeTitle: {
-        fontSize: 18,
-        fontWeight: "700",
-        color: colors.gray[900],
-        marginBottom: 18,
-    },
+            shadowColor: "#000",
+            shadowOffset: {
+                width: 0,
+                height: 2,
+            },
+            shadowOpacity: 0.15,
+            shadowRadius: 3,
+        },
 
-    routeItem: {
-        flexDirection: "row",
-        alignItems: "flex-start",
-        marginBottom: 18,
-    },
+        infoLabel: {
+            fontSize: 11,
+            color: colors.black,
+            marginBottom: 5,
+        },
 
-    routeNumber: {
-        width: 38,
-        height: 38,
-        borderRadius: 19,
-        backgroundColor: colors.green[100],
-        justifyContent: "center",
-        alignItems: "center",
-    },
+        infoValue: {
+            fontSize: 16,
+            fontWeight: "700",
+            color: colors.black,
+        },
 
-    routeNumberText: {
-        fontSize: 15,
-        fontWeight: "700",
-        color: colors.green[800],
-    },
+        // BOTÃO
 
-    routeContent: {
-        flex: 1,
-        marginLeft: 12,
-    },
+        startButton: {
+            height: 48,
+            marginHorizontal: 10,
+            marginTop: 10,
 
-    routeType: {
-        fontSize: 11,
-        fontWeight: "700",
-        color: colors.green[700],
-        marginBottom: 3,
-    },
+            backgroundColor:
+                colors.green[600],
 
-    routeAddress: {
-        fontSize: 14,
-        lineHeight: 20,
-        color: colors.gray[800],
-    },
+            borderRadius: 12,
 
-    destinationText: {
-        fontSize: 13,
-        color: colors.gray[600],
-        marginTop: 4,
-    },
+            alignItems: "center",
+            justifyContent: "center",
+        },
 
-    startButton: {
-        height: 54,
-        backgroundColor: colors.green[600],
-        borderRadius: 15,
-        justifyContent: "center",
-        alignItems: "center",
-        marginTop: 20,
-    },
+        startButtonText: {
+            fontSize: 14,
+            fontWeight: "700",
+            color: colors.white,
+        },
 
-    startButtonText: {
-        color: colors.white,
-        fontSize: 16,
-        fontWeight: "700",
-    },
-});
+    });

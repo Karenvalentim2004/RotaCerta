@@ -4,20 +4,34 @@ import {
 } from "@react-navigation/native-stack";
 
 import { Tabs } from "./Tabs";
+
 import { RouteResult } from "@/screens/RouteResult";
-import { OptimizedRoute } from "@/services/optimizeRoute";
+import { Vehicles } from "@/screens/Vehicles";
 
 export type RootStackParamList = {
     Tabs: undefined;
 
     RouteResult: {
-        route: OptimizedRoute;
+        route: {
+            distanciaTotalKm: number;
+            custoEstimadoCombustivel: number;
+            litrosConsumidos: number;
+            resumoRota: string;
+
+            rotaOrdenada: {
+                ordem: number;
+                tipo: string;
+                enderecoFormatado: string;
+                destinatario?: string | null;
+            }[];
+        };
     };
+
+    Vehicles: undefined;
 };
 
 const Stack =
     createNativeStackNavigator<RootStackParamList>();
-    MeusVeiculos: undefined;
 
 export function Routes() {
     return (
@@ -35,6 +49,11 @@ export function Routes() {
                 <Stack.Screen
                     name="RouteResult"
                     component={RouteResult}
+                />
+
+                <Stack.Screen
+                    name="Vehicles"
+                    component={Vehicles}
                 />
             </Stack.Navigator>
         </NavigationContainer>

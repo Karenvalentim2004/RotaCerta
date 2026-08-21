@@ -8,7 +8,7 @@ import {
     Alert,
 } from "react-native";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import {
     useNavigation,
@@ -28,40 +28,37 @@ import {
     AnalyzedAddress,
 } from "@/services/analyzeImage";
 
-import { optimizeRoute } from "@/services/optimizeRoute";
+import {
+    optimizeRoute,
+} from "@/services/optimizeRoute";
+
+import {
+    getVehicles,
+    Vehicle,
+} from "@/services/vehicleStorage";
 
 import {
     RootStackParamList,
 } from "@/navigation";
 
 import { colors } from "@/theme/colors";
-
 import { styles } from "./styles";
 
-
-// ==========================================
 // TIPAGEM DA NAVEGAÇÃO
-// ==========================================
 
 type NavigationProps =
     NativeStackNavigationProp<
         RootStackParamList
     >;
 
-
-// ==========================================
 // COMPONENTE
-// ==========================================
 
 export function CreateRoute() {
 
     const navigation =
         useNavigation<NavigationProps>();
 
-
-    // ==========================================
     // STATES
-    // ==========================================
 
     const [cameraVisible, setCameraVisible] =
         useState(false);
@@ -78,11 +75,14 @@ export function CreateRoute() {
     const [destinoFinal, setDestinoFinal] =
         useState("");
 
-    const [veiculo, setVeiculo] =
-        useState("moto");
-
     const [loading, setLoading] =
         useState(false);
+
+    const [vehicles, setVehicles] =
+        useState<Vehicle[]>([]);
+
+    const [selectedVehicle, setSelectedVehicle] =
+        useState<Vehicle | null>(null);
 
     const [manualAddress, setManualAddress] =
         useState({
@@ -94,22 +94,60 @@ export function CreateRoute() {
             complemento: "",
         });
 
+    // CARREGAR VEÍCULOS
 
-    // ==========================================
+    useEffect(() => {
+
+        async function loadVehicles() {
+
+            try {
+
+                const savedVehicles =
+                    await getVehicles();
+
+                setVehicles(
+                    savedVehicles
+                );
+
+                if (
+                    savedVehicles.length > 0
+                ) {
+
+                    setSelectedVehicle(
+                        savedVehicles[0]
+                    );
+
+                }
+
+            } catch (error) {
+
+                console.error(
+                    "❌ Erro ao carregar veículos:",
+                    error
+                );
+
+            }
+
+        }
+
+        loadVehicles();
+
+    }, []);
+
     // FOTO
-    // ==========================================
 
     function handleTakePhoto() {
+
         setCameraVisible(true);
+
     }
 
-
-    // ==========================================
     // ENDEREÇO MANUAL
-    // ==========================================
 
     function handleTypeAddress() {
+
         setManualVisible(true);
+
     }
 
 
@@ -120,12 +158,14 @@ export function CreateRoute() {
             !manualAddress.numero.trim() ||
             !manualAddress.cidade.trim()
         ) {
+
             Alert.alert(
                 "Endereço incompleto",
                 "Preencha pelo menos rua, número e cidade."
             );
 
             return;
+
         }
 
 
@@ -155,11 +195,12 @@ export function CreateRoute() {
             complemento:
                 manualAddress.complemento.trim() ||
                 null,
+
         };
 
 
         setDestinos(
-            (current) => [
+            current => [
                 ...current,
                 novoDestino,
             ]
@@ -177,30 +218,74 @@ export function CreateRoute() {
 
 
         setManualVisible(false);
+
     }
 
-
-    // ==========================================
     // REMOVER DESTINO
-    // ==========================================
 
     function handleRemoveDestination(
         index: number
     ) {
 
         setDestinos(
-            (current) =>
+            current =>
                 current.filter(
                     (_, i) =>
                         i !== index
                 )
         );
+
     }
 
+    // SELECIONAR VEÍCULO
 
-    // ==========================================
+    function handleSelectVehicle() {
+
+        if (vehicles.length === 0) {
+
+            Alert.alert(
+                "Nenhum veículo cadastrado",
+                "Cadastre um veículo antes de criar uma rota.",
+                [
+                    {
+                        text: "OK",
+                    },
+                ]
+            );
+
+            return;
+
+        }
+
+
+        if (vehicles.length === 1) {
+
+            setSelectedVehicle(
+                vehicles[0]
+            );
+
+            return;
+
+        }
+
+
+        Alert.alert(
+            "Selecionar veículo",
+            "Escolha o veículo que será utilizado:",
+            vehicles.map(
+                vehicle => ({
+                    text: `${vehicle.tipo} - ${vehicle.modelo}`,
+                    onPress: () =>
+                        setSelectedVehicle(
+                            vehicle
+                        ),
+                })
+            )
+        );
+
+    }
+
     // OTIMIZAR ROTA
-    // ==========================================
 
     async function handleOptimizeRoute() {
 
@@ -212,6 +297,7 @@ export function CreateRoute() {
             );
 
             return;
+
         }
 
 
@@ -223,6 +309,19 @@ export function CreateRoute() {
             );
 
             return;
+
+        }
+
+
+        if (!selectedVehicle) {
+
+            Alert.alert(
+                "Veículo não selecionado",
+                "Cadastre e selecione um veículo antes de otimizar a rota."
+            );
+
+            return;
+
         }
 
 
@@ -235,51 +334,52 @@ export function CreateRoute() {
                 "🚀 Iniciando otimização..."
             );
 
-
             console.log(
                 "Origem:",
                 origem
             );
-
 
             console.log(
                 "Destinos:",
                 destinos
             );
 
-
             console.log(
                 "Destino final:",
                 destinoFinal
             );
 
-
             console.log(
                 "Veículo:",
-                veiculo
+                selectedVehicle
             );
 
-
-            // ==========================================
-            // CONFIGURAÇÃO TEMPORÁRIA
-            // ==========================================
-            //
-            // Depois vamos buscar esses valores
-            // do Perfil/Configurações.
-            //
-            // Moto:
-            // combustível = R$ 6,50
-            // consumo = 35 km/L
-            //
+            // CONFIGURAÇÃO DO VEÍCULO
 
             const valorCombustivel = 6.5;
 
-            const kmPorLitro = 35;
+            const kmPorLitro =
+                Number(
+                    selectedVehicle.consumo
+                );
 
+            // VALIDAR CONSUMO
 
-            // ==========================================
-            // CHAMADA DA API
-            // ==========================================
+            if (
+                !kmPorLitro ||
+                kmPorLitro <= 0
+            ) {
+
+                Alert.alert(
+                    "Consumo inválido",
+                    "O veículo selecionado possui um consumo inválido."
+                );
+
+                return;
+
+            }
+
+            // CHAMAR API
 
             const resultado =
                 await optimizeRoute(
@@ -296,10 +396,7 @@ export function CreateRoute() {
                 resultado
             );
 
-
-            // ==========================================
             // IR PARA RESULTADO
-            // ==========================================
 
             navigation.navigate(
                 "RouteResult",
@@ -326,12 +423,10 @@ export function CreateRoute() {
             setLoading(false);
 
         }
+
     }
 
-
-    // ==========================================
     // RENDER
-    // ==========================================
 
     return (
 
@@ -348,9 +443,7 @@ export function CreateRoute() {
                 }
             >
 
-                {/* ================================== */}
                 {/* TÍTULO */}
-                {/* ================================== */}
 
                 <Text
                     style={styles.title}
@@ -366,10 +459,7 @@ export function CreateRoute() {
                     criar sua rota.
                 </Text>
 
-
-                {/* ================================== */}
                 {/* FORMAS DE ADICIONAR */}
-                {/* ================================== */}
 
                 <View
                     style={
@@ -401,9 +491,7 @@ export function CreateRoute() {
                 </View>
 
 
-                {/* ================================== */}
                 {/* FORMULÁRIO MANUAL */}
-                {/* ================================== */}
 
                 {manualVisible && (
 
@@ -472,7 +560,7 @@ export function CreateRoute() {
                                 manualAddress.rua
                             }
                             onChangeText={
-                                (text) =>
+                                text =>
                                     setManualAddress(
                                         current => ({
                                             ...current,
@@ -507,7 +595,7 @@ export function CreateRoute() {
                                 manualAddress.numero
                             }
                             onChangeText={
-                                (text) =>
+                                text =>
                                     setManualAddress(
                                         current => ({
                                             ...current,
@@ -541,7 +629,7 @@ export function CreateRoute() {
                                 manualAddress.bairro
                             }
                             onChangeText={
-                                (text) =>
+                                text =>
                                     setManualAddress(
                                         current => ({
                                             ...current,
@@ -575,7 +663,7 @@ export function CreateRoute() {
                                 manualAddress.cidade
                             }
                             onChangeText={
-                                (text) =>
+                                text =>
                                     setManualAddress(
                                         current => ({
                                             ...current,
@@ -611,7 +699,7 @@ export function CreateRoute() {
                                 manualAddress.estado
                             }
                             onChangeText={
-                                (text) =>
+                                text =>
                                     setManualAddress(
                                         current => ({
                                             ...current,
@@ -645,12 +733,11 @@ export function CreateRoute() {
                                 manualAddress.complemento
                             }
                             onChangeText={
-                                (text) =>
+                                text =>
                                     setManualAddress(
                                         current => ({
                                             ...current,
-                                            complemento:
-                                                text,
+                                            complemento: text,
                                         })
                                     )
                             }
@@ -679,12 +766,11 @@ export function CreateRoute() {
                         </TouchableOpacity>
 
                     </View>
+
                 )}
 
 
-                {/* ================================== */}
                 {/* ORIGEM */}
-                {/* ================================== */}
 
                 <View
                     style={styles.section}
@@ -725,10 +811,7 @@ export function CreateRoute() {
 
                 </View>
 
-
-                {/* ================================== */}
                 {/* DESTINOS */}
-                {/* ================================== */}
 
                 <View
                     style={styles.section}
@@ -813,6 +896,7 @@ export function CreateRoute() {
                                                 styles.destinationText
                                             }
                                         >
+
                                             {destino.bairro ||
                                                 ""}
 
@@ -827,6 +911,7 @@ export function CreateRoute() {
                                             {destino.estado
                                                 ? `/${destino.estado}`
                                                 : ""}
+
                                         </Text>
 
 
@@ -884,10 +969,9 @@ export function CreateRoute() {
 
                             )
                         )
+
                     )}
 
-
-                    {/* ADICIONAR OUTRO */}
 
                     <TouchableOpacity
                         onPress={
@@ -907,10 +991,7 @@ export function CreateRoute() {
 
                 </View>
 
-
-                {/* ================================== */}
                 {/* DESTINO FINAL */}
-                {/* ================================== */}
 
                 <View
                     style={styles.section}
@@ -953,10 +1034,7 @@ export function CreateRoute() {
 
                 </View>
 
-
-                {/* ================================== */}
                 {/* VEÍCULO */}
-                {/* ================================== */}
 
                 <View
                     style={styles.section}
@@ -985,11 +1063,9 @@ export function CreateRoute() {
                         style={
                             styles.vehicleCard
                         }
-                        onPress={() => {
-                            console.log(
-                                "Selecionar veículo"
-                            );
-                        }}
+                        onPress={
+                            handleSelectVehicle
+                        }
                     >
 
                         <View
@@ -999,7 +1075,12 @@ export function CreateRoute() {
                         >
 
                             <FontAwesome6
-                                name="motorcycle"
+                                name={
+                                    selectedVehicle?.tipo?.toLowerCase() ===
+                                        "carro"
+                                        ? "car"
+                                        : "motorcycle"
+                                }
                                 size={22}
                                 color={
                                     colors.green[700]
@@ -1015,23 +1096,72 @@ export function CreateRoute() {
                             }
                         >
 
-                            <Text
-                                style={
-                                    styles.vehicleTitle
-                                }
-                            >
-                                Moto
-                            </Text>
+                            {selectedVehicle ? (
+
+                                <>
+                                    <Text
+                                        style={
+                                            styles.vehicleTitle
+                                        }
+                                    >
+                                        {
+                                            selectedVehicle.tipo
+                                        }{" "}
+                                        -{" "}
+                                        {
+                                            selectedVehicle.modelo
+                                        }
+                                    </Text>
 
 
-                            <Text
-                                style={
-                                    styles.vehicleText
-                                }
-                            >
-                                Dados configurados
-                                no perfil
-                            </Text>
+                                    <Text
+                                        style={
+                                            styles.vehicleText
+                                        }
+                                    >
+                                        Consumo:{" "}
+                                        {
+                                            selectedVehicle.consumo
+                                        }{" "}
+                                        km/L
+                                    </Text>
+
+
+                                    <Text
+                                        style={
+                                            styles.vehicleText
+                                        }
+                                    >
+                                        Combustível:{" "}
+                                        {
+                                            selectedVehicle.combustivel
+                                        }
+                                    </Text>
+                                </>
+
+                            ) : (
+
+                                <>
+                                    <Text
+                                        style={
+                                            styles.vehicleTitle
+                                        }
+                                    >
+                                        Nenhum veículo
+                                    </Text>
+
+
+                                    <Text
+                                        style={
+                                            styles.vehicleText
+                                        }
+                                    >
+                                        Toque para cadastrar
+                                        ou selecionar um veículo
+                                    </Text>
+                                </>
+
+                            )}
 
                         </View>
 
@@ -1049,14 +1179,11 @@ export function CreateRoute() {
                 </View>
 
 
-                {/* ================================== */}
                 {/* OTIMIZAR */}
-                {/* ================================== */}
 
                 <TouchableOpacity
                     style={[
                         styles.optimizeButton,
-
                         loading &&
                         styles.optimizeButtonDisabled,
                     ]}
@@ -1082,10 +1209,7 @@ export function CreateRoute() {
 
             </ScrollView>
 
-
-            {/* ================================== */}
             {/* CÂMERA */}
-            {/* ================================== */}
 
             <CameraModal
                 visible={
@@ -1128,6 +1252,7 @@ export function CreateRoute() {
                             );
 
                             return;
+
                         }
 
 
@@ -1162,5 +1287,7 @@ export function CreateRoute() {
             />
 
         </SafeAreaView>
+
     );
+
 }

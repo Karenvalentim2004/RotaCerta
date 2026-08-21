@@ -39,8 +39,13 @@ export async function optimizeRoute(
     entregas: RouteDestination[]
 ): Promise<OptimizedRoute> {
 
+    const API_URL =
+        "http://10.0.2.2:3000/api/optimize-route";
+
+    console.log("🌐 Chamando API:", API_URL);
+
     const response = await fetch(
-        "http://10.0.2.2:3000/api/optimize-route",
+        API_URL,
         {
             method: "POST",
 
@@ -56,6 +61,11 @@ export async function optimizeRoute(
                 entregas,
             }),
         }
+    );
+
+    console.log(
+        "📡 Status da API:",
+        response.status
     );
 
     const data = await response.json();

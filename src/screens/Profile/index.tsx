@@ -21,7 +21,9 @@ type NavigationProp =
 
 export function Profile() {
     const navigation =
-        useNavigation<NavigationProp>();
+        useNavigation<
+            NativeStackNavigationProp<RootStackParamList>
+        >();
 
     return (
         <SafeAreaView style={styles.container}>
@@ -102,7 +104,7 @@ export function Profile() {
                     style={styles.option}
                     onPress={() => {
                         navigation.navigate(
-                            "MeusVeiculos"
+                            "Vehicles"
                         );
                     }}
                 >

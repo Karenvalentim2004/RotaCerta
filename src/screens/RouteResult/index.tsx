@@ -36,13 +36,16 @@ export function RouteResult({
     // Conta somente as entregas
     const quantidadeEntregas =
         resultado.rotaOrdenada.filter(
-            (parada) =>
+            parada =>
                 parada.tipo === "ENTREGA"
         ).length;
 
-    // 5 minutos por entrega
-    const tempoEstimado =
+    const tempoParadas =
         quantidadeEntregas * 5;
+
+    const tempoTotal =
+        resultado.tempoDeslocamentoMinutos +
+        tempoParadas;
 
     async function handleShare() {
 

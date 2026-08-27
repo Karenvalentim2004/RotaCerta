@@ -1,10 +1,5 @@
-import {
-    StyleSheet,
-} from "react-native";
-
-import {
-    colors,
-} from "@/theme/colors";
+import {StyleSheet,} from "react-native";
+import {colors,} from "@/theme/colors";
 
 export const styles =
     StyleSheet.create({
@@ -14,6 +9,7 @@ export const styles =
             backgroundColor:
                 colors.gray[100],
             paddingHorizontal: 10,
+            paddingTop: 50
         },
 
         // CABEÇALHO

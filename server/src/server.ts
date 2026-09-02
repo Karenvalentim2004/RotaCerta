@@ -5,6 +5,9 @@ import multer from "multer";
 
 import analyzeImageRouter from "./routes/analyzeImage";
 import optimizeRouteRouter from "./routes/optimizeRoute";
+import usersRouter from "./routes/users";
+import routesRouter from "./routes/routes";
+import vehiclesRouter from "./routes/vehicles";
 
 dotenv.config();
 
@@ -33,6 +36,21 @@ app.use(
 app.use(
     "/api/optimize-route",
     optimizeRouteRouter
+);
+
+app.use(
+    "/api/users",
+    usersRouter
+);
+
+app.use(
+    "/api/routes",
+    routesRouter
+);
+
+app.use(
+    "/api/vehicles",
+    vehiclesRouter
 );
 
 const PORT =

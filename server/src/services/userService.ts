@@ -1,5 +1,7 @@
 import db from "../db/database";
 
+import bcrypt from "bcrypt";
+
 export interface User {
     id: number;
     nome: string;
@@ -13,6 +15,11 @@ export async function createUser(
     email: string,
     senha: string
 ) {
+    const senhaHash = await bcrypt.hash(
+        senha,
+        10
+    );
+
     const result = await db.execute({
         sql: `
             INSERT INTO usuarios (
@@ -25,7 +32,7 @@ export async function createUser(
         args: [
             nome,
             email,
-            senha,
+            senhaHash,
         ],
     });
 

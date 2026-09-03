@@ -54,7 +54,8 @@ export async function listVehiclesByUser(
 }
 
 export async function findVehicleById(
-    id: number
+    id: number,
+    usuarioId: number
 ) {
     const result = await db.execute({
         sql: `
@@ -68,8 +69,12 @@ export async function findVehicleById(
                 criado_em
             FROM veiculos
             WHERE id = ?
+            AND usuario_id = ?
         `,
-        args: [id],
+        args: [
+            id,
+            usuarioId,
+        ],
     });
 
     return result.rows[0] ?? null;

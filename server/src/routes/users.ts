@@ -7,37 +7,33 @@ import {
     listUsers,
 } from "../services/userService";
 
+import {
+    createUserSchema,
+} from "../validators/userValidator";
+
 const router = Router();
 
-// =========================
 // CADASTRAR USUÁRIO
-// =========================
 
 router.post("/", async (request, response) => {
     try {
+        const resultado =
+            createUserSchema.safeParse(
+                request.body
+            );
+
+        if (!resultado.success) {
+            return response.status(400).json({
+                error: "Dados inválidos.",
+                detalhes: resultado.error.issues,
+            });
+        }
+
         const {
             nome,
             email,
             senha,
-        } = request.body;
-
-        if (!nome) {
-            return response.status(400).json({
-                error: "nome é obrigatório.",
-            });
-        }
-
-        if (!email) {
-            return response.status(400).json({
-                error: "email é obrigatório.",
-            });
-        }
-
-        if (!senha) {
-            return response.status(400).json({
-                error: "senha é obrigatória.",
-            });
-        }
+        } = resultado.data;
 
         const usuarioExistente =
             await findUserByEmail(email);

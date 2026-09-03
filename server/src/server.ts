@@ -8,6 +8,7 @@ import optimizeRouteRouter from "./routes/optimizeRoute";
 import usersRouter from "./routes/users";
 import routesRouter from "./routes/routes";
 import vehiclesRouter from "./routes/vehicles";
+import authRouter from "./routes/auth";
 
 dotenv.config();
 
@@ -51,6 +52,11 @@ app.use(
 app.use(
     "/api/vehicles",
     vehiclesRouter
+);
+
+app.use(
+    "/api/auth",
+    authRouter
 );
 
 const PORT =

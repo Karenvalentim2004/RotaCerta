@@ -8,6 +8,24 @@ import {
     getDirections,
 } from "../services/orsService";
 
+import {
+    createRoute,
+} from "../services/routeService";
+
+import {
+    findVehicleById,
+} from "../services/vehicleService";
+
+import {
+    authMiddleware,
+    AuthenticatedRequest,
+} from "../middleware/authMiddleware";
+
+import {
+    optimizeRouteSchema,
+} from "../validators/optimizeRouteValidator";
+
+
 interface GeocodedDelivery {
     id: number;
 
@@ -22,9 +40,13 @@ interface GeocodedDelivery {
     label: string;
 }
 
+
 const router = Router();
 
+
+// ==========================================
 // FUNÇÃO PARA MONTAR ENDEREÇO
+// ==========================================
 
 function formatDeliveryAddress(
     entrega: any
@@ -42,113 +64,153 @@ function formatDeliveryAddress(
         .join(", ");
 }
 
-// =========================
-// ROTA
-// =========================
+
+// ==========================================
+// OTIMIZAR ROTA
+// ==========================================
 
 router.post(
     "/",
-    async (request, response) => {
+    authMiddleware,
+    async (
+        request: AuthenticatedRequest,
+        response
+    ) => {
 
         try {
+
+            // ==========================================
+            // 1. USUÁRIO AUTENTICADO
+            // ==========================================
+
+            const usuarioId =
+                request.usuarioId;
+
+            if (!usuarioId) {
+
+                return response.status(401).json({
+                    error:
+                        "Usuário não autenticado.",
+                });
+            }
+
+
+            // ==========================================
+            // 2. VALIDAR DADOS
+            // ==========================================
+
+            const validacao =
+                optimizeRouteSchema.safeParse(
+                    request.body
+                );
+
+            if (!validacao.success) {
+
+                return response.status(400).json({
+                    error:
+                        "Dados inválidos.",
+
+                    detalhes:
+                        validacao.error.issues.map(
+                            (erro) => ({
+                                campo:
+                                    erro.path.join("."),
+                                mensagem:
+                                    erro.message,
+                            })
+                        ),
+                });
+            }
+
+
+            // ==========================================
+            // 3. DADOS VALIDADOS
+            // ==========================================
 
             const {
                 localInicio,
                 destinoFinal,
+                veiculoId,
                 valorCombustivel,
-                kmPorLitro,
                 entregas,
-            } = request.body;
+            } = validacao.data;
 
-            // =========================
-            // VALIDAÇÕES
-            // =========================
-
-            if (
-                !localInicio ||
-                typeof localInicio !== "string" ||
-                !localInicio.trim()
-            ) {
-
-                return response.status(400).json({
-                    error:
-                        "O endereço de origem é obrigatório.",
-                });
-            }
-
-            if (
-                !destinoFinal ||
-                typeof destinoFinal !== "string" ||
-                !destinoFinal.trim()
-            ) {
-
-                return response.status(400).json({
-                    error:
-                        "O destino final é obrigatório.",
-                });
-            }
-
-            if (
-                !Array.isArray(entregas) ||
-                entregas.length === 0
-            ) {
-
-                return response.status(400).json({
-                    error:
-                        "Adicione pelo menos uma entrega.",
-                });
-            }
-
-            const priceNum =
-                Number(valorCombustivel);
-
-            const kmlNum =
-                Number(kmPorLitro);
-
-            if (
-                !kmlNum ||
-                kmlNum <= 0
-            ) {
-
-                return response.status(400).json({
-                    error:
-                        "Consumo do veículo inválido.",
-                });
-            }
-
-            if (
-                !priceNum ||
-                priceNum <= 0
-            ) {
-
-                return response.status(400).json({
-                    error:
-                        "Valor do combustível inválido.",
-                });
-            }
 
             console.log(
                 "🚀 Iniciando otimização ORS..."
             );
 
             console.log(
-                "Origem:",
+                "👤 Usuário:",
+                usuarioId
+            );
+
+            console.log(
+                "🚗 Veículo:",
+                veiculoId
+            );
+
+            console.log(
+                "📍 Origem:",
                 localInicio
             );
 
             console.log(
-                "Destino final:",
+                "🏁 Destino final:",
                 destinoFinal
             );
 
             console.log(
-                "Entregas:",
+                "📦 Entregas:",
                 entregas.length
             );
 
-            // =========================
-            // 1. GEOCODIFICAR ORIGEM
-            // =========================
+
+            // ==========================================
+            // 4. BUSCAR VEÍCULO
+            // ==========================================
+
+            console.log(
+                "🚗 Buscando veículo..."
+            );
+
+            const veiculo =
+                await findVehicleById(
+                    veiculoId,
+                    usuarioId
+                );
+
+
+            if (!veiculo) {
+
+                return response.status(404).json({
+                    error:
+                        "Veículo não encontrado.",
+                });
+            }
+
+
+            const consumoVeiculo =
+                Number(
+                    veiculo.consumo
+                );
+
+
+            console.log(
+                "✅ Veículo encontrado:",
+                veiculo.modelo
+            );
+
+            console.log(
+                "⛽ Consumo:",
+                consumoVeiculo,
+                "km/L"
+            );
+
+
+            // ==========================================
+            // 5. GEOCODIFICAR ORIGEM
+            // ==========================================
 
             console.log(
                 "📍 Localizando origem..."
@@ -159,14 +221,16 @@ router.post(
                     localInicio
                 );
 
+
             console.log(
                 "✅ Origem:",
                 origem
             );
 
-            // =========================
-            // 2. GEOCODIFICAR DESTINO FINAL
-            // =========================
+
+            // ==========================================
+            // 6. GEOCODIFICAR DESTINO FINAL
+            // ==========================================
 
             console.log(
                 "📍 Localizando destino final..."
@@ -177,19 +241,25 @@ router.post(
                     destinoFinal
                 );
 
+
             console.log(
                 "✅ Destino final:",
                 destino
             );
 
-            // 3. GEOCODIFICAR ENTREGAS
+
+            // ==========================================
+            // 7. GEOCODIFICAR ENTREGAS
+            // ==========================================
 
             console.log(
                 "📍 Localizando entregas..."
             );
 
+
             const entregasGeocodificadas:
                 GeocodedDelivery[] = [];
+
 
             for (
                 let i = 0;
@@ -200,23 +270,29 @@ router.post(
                 const entrega =
                     entregas[i];
 
+
                 const endereco =
                     formatDeliveryAddress(
                         entrega
                     );
+
 
                 console.log(
                     `📍 Entrega ${i + 1}:`,
                     endereco
                 );
 
+
                 const coordenadas =
                     await geocodeAddress(
                         endereco
                     );
 
+
                 entregasGeocodificadas.push({
-                    id: i + 1,
+
+                    id:
+                        i + 1,
 
                     original:
                         entrega,
@@ -233,21 +309,25 @@ router.post(
                         coordenadas.label,
                 });
 
+
                 console.log(
                     `✅ Entrega ${i + 1} localizada`
                 );
             }
 
-            // =========================
-            // 4. OTIMIZAR ORDEM
-            // =========================
+
+            // ==========================================
+            // 8. OTIMIZAR ORDEM DAS ENTREGAS
+            // ==========================================
 
             console.log(
                 "🧠 Otimizando ordem das entregas..."
             );
 
+
             const ordemOtimizada =
                 await optimizeDeliveryOrder(
+
                     [
                         origem.longitude,
                         origem.latitude,
@@ -260,41 +340,51 @@ router.post(
 
                     entregasGeocodificadas.map(
                         (entrega) => ({
+
                             id:
                                 entrega.id,
 
                             coordenadas: [
+
                                 entrega.longitude,
                                 entrega.latitude,
+
                             ],
                         })
                     )
                 );
+
 
             console.log(
                 "✅ Ordem encontrada:",
                 ordemOtimizada.deliveryIds
             );
 
-            // =========================
-            // 5. MONTAR ROTA ORDENADA
-            // =========================
+
+            // ==========================================
+            // 9. MONTAR ENTREGAS ORDENADAS
+            // ==========================================
 
             const entregasOrdenadas =
                 ordemOtimizada.deliveryIds
                     .map(
                         (id) =>
-                            entregasGeocodificadas
-                                .find(
-                                    (entrega) =>
-                                        entrega.id === id
-                                )
+                            entregasGeocodificadas.find(
+                                (entrega) =>
+                                    entrega.id === id
+                            )
                     )
-                    .filter(Boolean) as typeof entregasGeocodificadas;
+                    .filter(
+                        (
+                            entrega
+                        ): entrega is GeocodedDelivery =>
+                            entrega !== undefined
+                    );
 
-            // =========================
-            // 6. COORDENADAS DA ROTA
-            // =========================
+
+            // ==========================================
+            // 10. COORDENADAS DA ROTA
+            // ==========================================
 
             const coordenadasRota:
                 [number, number][] = [
@@ -306,12 +396,14 @@ router.post(
 
                     ...entregasOrdenadas.map(
                         (entrega) => [
+
                             entrega.longitude,
                             entrega.latitude,
+
                         ] as [
-                                number,
-                                number
-                            ]
+                            number,
+                            number
+                        ]
                     ),
 
                     [
@@ -320,34 +412,39 @@ router.post(
                     ],
                 ];
 
-            // =========================
-            // 7. CALCULAR TRAJETO REAL
-            // =========================
+
+            // ==========================================
+            // 11. CALCULAR TRAJETO REAL
+            // ==========================================
 
             console.log(
                 "🛣️ Calculando trajeto pelas ruas..."
             );
+
 
             const directions =
                 await getDirections(
                     coordenadasRota
                 );
 
+
             console.log(
                 "✅ Trajeto calculado"
             );
 
-            // =========================
-            // 8. DISTÂNCIA
-            // =========================
+
+            // ==========================================
+            // 12. DISTÂNCIA
+            // ==========================================
 
             const distanciaTotalKm =
                 directions.distanciaMetros /
                 1000;
 
-            // =========================
-            // 9. TEMPO
-            // =========================
+
+            // ==========================================
+            // 13. TEMPO
+            // ==========================================
 
             const tempoDeslocamentoMinutos =
                 Math.ceil(
@@ -355,29 +452,35 @@ router.post(
                     60
                 );
 
+
             // 5 MINUTOS POR ENTREGA
+
             const tempoParadasMinutos =
                 entregas.length * 5;
+
 
             const tempoTotalMinutos =
                 tempoDeslocamentoMinutos +
                 tempoParadasMinutos;
 
-            // =========================
-            // 10. COMBUSTÍVEL
-            // =========================
+
+            // ==========================================
+            // 14. COMBUSTÍVEL
+            // ==========================================
 
             const litrosConsumidos =
                 distanciaTotalKm /
-                kmlNum;
+                consumoVeiculo;
+
 
             const custoEstimadoCombustivel =
                 litrosConsumidos *
-                priceNum;
+                valorCombustivel;
 
-            // =========================
-            // 11. ROTA ORDENADA
-            // =========================
+
+            // ==========================================
+            // 15. ROTA ORDENADA
+            // ==========================================
 
             const rotaOrdenada = [
 
@@ -397,11 +500,13 @@ router.post(
                         origem.longitude,
                 },
 
+
                 ...entregasOrdenadas.map(
                     (
                         entrega,
                         index
                     ) => ({
+
                         ordem:
                             index + 2,
 
@@ -424,6 +529,7 @@ router.post(
                     })
                 ),
 
+
                 {
                     ordem:
                         entregasOrdenadas.length + 2,
@@ -442,9 +548,10 @@ router.post(
                 },
             ];
 
-            // =========================
-            // 12. RESUMO
-            // =========================
+
+            // ==========================================
+            // 16. RESUMO
+            // ==========================================
 
             const resumoRota =
                 `Rota com ${entregas.length} entrega(s), ` +
@@ -452,11 +559,132 @@ router.post(
                 `e aproximadamente ${tempoTotalMinutos} minutos ` +
                 `considerando 5 minutos por parada.`;
 
-            // =========================
-            // 13. RESPOSTA
-            // =========================
+
+            // ==========================================
+            // 17. PREPARAR ENTREGAS PARA O BANCO
+            // ==========================================
+
+            const entregasParaSalvar =
+                entregasOrdenadas.map(
+                    (
+                        entrega,
+                        index
+                    ) => ({
+
+                        ordem:
+                            index + 1,
+
+                        destinatario:
+                            entrega.original
+                                .destinatario ??
+                            null,
+
+                        rua:
+                            entrega.original
+                                .rua ??
+                            null,
+
+                        numero:
+                            entrega.original
+                                .numero ??
+                            null,
+
+                        bairro:
+                            entrega.original
+                                .bairro ??
+                            null,
+
+                        cidade:
+                            entrega.original
+                                .cidade ??
+                            null,
+
+                        estado:
+                            entrega.original
+                                .estado ??
+                            null,
+
+                        complemento:
+                            entrega.original
+                                .complemento ??
+                            null,
+
+                        latitude:
+                            entrega.latitude,
+
+                        longitude:
+                            entrega.longitude,
+                    })
+                );
+
+
+            // ==========================================
+            // 18. SALVAR NO TURSO
+            // ==========================================
+
+            console.log(
+                "💾 Salvando rota no Turso..."
+            );
+
+
+            const rotaSalva =
+                await createRoute({
+
+                    usuarioId,
+
+                    veiculoId,
+
+                    origem:
+                        localInicio,
+
+                    destinoFinal,
+
+                    distanciaTotalKm:
+                        Number(
+                            distanciaTotalKm.toFixed(2)
+                        ),
+
+                    tempoDeslocamentoMinutos,
+
+                    tempoParadasMinutos,
+
+                    tempoTotalMinutos,
+
+                    litrosConsumidos:
+                        Number(
+                            litrosConsumidos.toFixed(2)
+                        ),
+
+                    custoEstimado:
+                        Number(
+                            custoEstimadoCombustivel
+                                .toFixed(2)
+                        ),
+
+                    geometria:
+                        directions.geometria,
+
+                    entregas:
+                        entregasParaSalvar,
+                });
+
+
+            console.log(
+                "✅ Rota salva no Turso:",
+                rotaSalva.id
+            );
+
+
+            // ==========================================
+            // 19. RESULTADO
+            // ==========================================
 
             const resultado = {
+
+                id:
+                    rotaSalva.id,
+
+                veiculoId,
 
                 distanciaTotalKm:
                     Number(
@@ -489,13 +717,16 @@ router.post(
                     directions.geometria,
             };
 
+
             console.log(
-                "🎉 Rota calculada com sucesso!"
+                "🎉 Rota calculada e salva com sucesso!"
             );
+
 
             return response.json(
                 resultado
             );
+
 
         } catch (error: any) {
 
@@ -504,13 +735,17 @@ router.post(
                 error
             );
 
+
             return response.status(500).json({
+
                 error:
                     error?.message ||
                     "Erro ao calcular a rota.",
+
             });
         }
     }
 );
+
 
 export default router;

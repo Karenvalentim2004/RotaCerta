@@ -19,7 +19,7 @@ async function createDatabase() {
             )
         `);
 
-        
+
         // VEÍCULOS
 
         await db.execute(`
@@ -49,33 +49,23 @@ async function createDatabase() {
 
         await db.execute(`
             CREATE TABLE IF NOT EXISTS rotas (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-
-                usuario_id INTEGER NOT NULL,
-
-                data_rota TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
-
-                origem TEXT NOT NULL,
-
-                destino_final TEXT NOT NULL,
-
-                distancia_total_km REAL NOT NULL,
-
-                tempo_deslocamento_minutos INTEGER NOT NULL,
-
-                tempo_paradas_minutos INTEGER NOT NULL,
-
-                tempo_total_minutos INTEGER NOT NULL,
-
-                litros_consumidos REAL NOT NULL,
-
-                custo_estimado REAL NOT NULL,
-
-                FOREIGN KEY (usuario_id)
-                    REFERENCES usuarios(id)
-                    ON DELETE CASCADE
-            )
-        `);
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        usuario_id INTEGER NOT NULL,
+        data_rota TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        origem TEXT NOT NULL,
+        destino_final TEXT NOT NULL,
+        distancia_total_km REAL NOT NULL,
+        tempo_deslocamento_minutos INTEGER NOT NULL,
+        tempo_paradas_minutos INTEGER NOT NULL,
+        tempo_total_minutos INTEGER NOT NULL,
+        litros_consumidos REAL NOT NULL,
+        custo_estimado REAL NOT NULL,
+        geometria TEXT,
+        FOREIGN KEY (usuario_id)
+            REFERENCES usuarios(id)
+            ON DELETE CASCADE
+    )
+`);
 
 
         // ENTREGAS

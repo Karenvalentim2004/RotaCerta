@@ -18,6 +18,8 @@ export interface RouteDelivery {
 export interface CreateRouteData {
     usuarioId: number;
 
+    veiculoId: number;
+
     origem: string;
     destinoFinal: string;
 
@@ -30,8 +32,15 @@ export interface CreateRouteData {
     litrosConsumidos: number;
     custoEstimado: number;
 
+    geometria: any;
+
     entregas: RouteDelivery[];
 }
+
+
+// ==========================================
+// CRIAR ROTA
+// ==========================================
 
 export async function createRoute(
     data: CreateRouteData
@@ -44,6 +53,7 @@ export async function createRoute(
             sql: `
                 INSERT INTO rotas (
                     usuario_id,
+                    veiculo_id,
                     origem,
                     destino_final,
                     distancia_total_km,
@@ -51,12 +61,14 @@ export async function createRoute(
                     tempo_paradas_minutos,
                     tempo_total_minutos,
                     litros_consumidos,
-                    custo_estimado
+                    custo_estimado,
+                    geometria
                 )
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             `,
             args: [
                 data.usuarioId,
+                data.veiculoId,
                 data.origem,
                 data.destinoFinal,
                 data.distanciaTotalKm,
@@ -65,6 +77,7 @@ export async function createRoute(
                 data.tempoTotalMinutos,
                 data.litrosConsumidos,
                 data.custoEstimado,
+                JSON.stringify(data.geometria),
             ],
         });
 
@@ -72,7 +85,9 @@ export async function createRoute(
             Number(routeResult.lastInsertRowid);
 
 
+        // ==========================================
         // 2. SALVAR AS ENTREGAS
+        // ==========================================
 
         for (const entrega of data.entregas) {
 
@@ -111,7 +126,9 @@ export async function createRoute(
         }
 
 
+        // ==========================================
         // 3. RETORNAR A ROTA CRIADA
+        // ==========================================
 
         return {
             id: rotaId,
@@ -129,7 +146,10 @@ export async function createRoute(
     }
 }
 
-//CONSULTAR
+
+// ==========================================
+// CONSULTAR UMA ROTA
+// ==========================================
 
 export async function getRouteById(
     rotaId: number,
@@ -141,6 +161,7 @@ export async function getRouteById(
             SELECT
                 id,
                 usuario_id,
+                veiculo_id,
                 data_rota,
                 origem,
                 destino_final,
@@ -149,7 +170,8 @@ export async function getRouteById(
                 tempo_paradas_minutos,
                 tempo_total_minutos,
                 litros_consumidos,
-                custo_estimado
+                custo_estimado,
+                geometria
             FROM rotas
             WHERE id = ?
             AND usuario_id = ?
@@ -160,9 +182,53 @@ export async function getRouteById(
         ],
     });
 
+
+    // ==========================================
+    // ROTA NÃO ENCONTRADA
+    // ==========================================
+
     if (routeResult.rows.length === 0) {
         return null;
     }
+
+
+    // ==========================================
+    // PEGAR ROTA
+    // ==========================================
+
+    const rota =
+        routeResult.rows[0];
+
+
+    // ==========================================
+    // CONVERTER GEOMETRIA
+    // ==========================================
+
+    let geometria = null;
+
+    if (rota.geometria) {
+
+        try {
+
+            geometria =
+                JSON.parse(
+                    String(rota.geometria)
+                );
+
+        } catch (error) {
+
+            console.error(
+                "❌ Erro ao interpretar geometria:",
+                error
+            );
+
+        }
+    }
+
+
+    // ==========================================
+    // BUSCAR ENTREGAS DA ROTA
+    // ==========================================
 
     const deliveryResult = await db.execute({
         sql: `
@@ -186,14 +252,26 @@ export async function getRouteById(
         args: [rotaId],
     });
 
-    return {
-        rota: routeResult.rows[0],
 
-        entregas: deliveryResult.rows,
+    // ==========================================
+    // RETORNAR ROTA + ENTREGAS
+    // ==========================================
+
+    return {
+        rota: {
+            ...rota,
+            geometria,
+        },
+
+        entregas:
+            deliveryResult.rows,
     };
 }
 
-//HISTORICO DE ROTAS
+
+// ==========================================
+// HISTÓRICO DE ROTAS
+// ==========================================
 
 export async function listRoutesByUser(
     usuarioId: number
@@ -204,6 +282,7 @@ export async function listRoutesByUser(
             SELECT
                 id,
                 data_rota,
+                veiculo_id,
                 origem,
                 destino_final,
                 distancia_total_km,

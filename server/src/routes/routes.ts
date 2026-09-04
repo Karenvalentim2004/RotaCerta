@@ -14,7 +14,9 @@ import {
 const router = Router();
 
 
-// CRIAR UMA ROTA
+// ==========================================
+// CRIAR ROTA
+// ==========================================
 
 router.post(
     "/",
@@ -26,6 +28,16 @@ router.post(
 
         try {
 
+            const usuarioId =
+                request.usuarioId;
+
+            if (!usuarioId) {
+                return response.status(401).json({
+                    error:
+                        "Usuário não autenticado.",
+                });
+            }
+
             const {
                 origem,
                 destinoFinal,
@@ -35,70 +47,39 @@ router.post(
                 tempoTotalMinutos,
                 litrosConsumidos,
                 custoEstimado,
+                geometria,
                 entregas,
             } = request.body;
 
-            const usuarioId =
-                request.usuarioId;
+            const rota =
+                await createRoute({
 
-            // VALIDAÇÕES
+                    usuarioId,
 
-            if (!usuarioId) {
-                return response.status(400).json({
-                    error: "usuarioId é obrigatório.",
+                    origem,
+
+                    destinoFinal,
+
+                    distanciaTotalKm,
+
+                    tempoDeslocamentoMinutos,
+
+                    tempoParadasMinutos,
+
+                    tempoTotalMinutos,
+
+                    litrosConsumidos,
+
+                    custoEstimado,
+
+                    geometria,
+
+                    entregas,
                 });
-            }
 
-            if (!origem) {
-                return response.status(400).json({
-                    error: "origem é obrigatória.",
-                });
-            }
-
-            if (!destinoFinal) {
-                return response.status(400).json({
-                    error: "destinoFinal é obrigatório.",
-                });
-            }
-
-            if (!Array.isArray(entregas)) {
-                return response.status(400).json({
-                    error: "entregas deve ser uma lista.",
-                });
-            }
-
-
-            // SALVAR
-
-            const rota = await createRoute({
-
-                usuarioId,
-
-                origem,
-
-                destinoFinal,
-
-                distanciaTotalKm,
-
-                tempoDeslocamentoMinutos,
-
-                tempoParadasMinutos,
-
-                tempoTotalMinutos,
-
-                litrosConsumidos,
-
-                custoEstimado,
-
-                entregas,
-            });
-
-
-            return response.status(201).json({
-                message: "Rota salva com sucesso!",
-                rota,
-            });
-
+            return response.status(201).json(
+                rota
+            );
 
         } catch (error) {
 
@@ -108,13 +89,17 @@ router.post(
             );
 
             return response.status(500).json({
-                error: "Erro ao salvar rota.",
+                error:
+                    "Erro ao criar rota.",
             });
         }
-    });
+    }
+);
 
 
-// BUSCAR UMA ROTA
+// ==========================================
+// HISTÓRICO DE ROTAS
+// ==========================================
 
 router.get(
     "/",
@@ -126,52 +111,44 @@ router.get(
 
         try {
 
-            const rotaId =
-                Number(request.params.id);
-
             const usuarioId =
                 request.usuarioId;
 
-            if (!rotaId || !usuarioId) {
-                return response.status(400).json({
+            if (!usuarioId) {
+                return response.status(401).json({
                     error:
-                        "rotaId e usuarioId são obrigatórios.",
+                        "Usuário não autenticado.",
                 });
             }
 
-
-            const rota =
-                await getRouteById(
-                    rotaId,
+            const rotas =
+                await listRoutesByUser(
                     usuarioId
                 );
 
-
-            if (!rota) {
-                return response.status(404).json({
-                    error: "Rota não encontrada.",
-                });
-            }
-
-
-            return response.json(rota);
-
+            return response.json(
+                rotas
+            );
 
         } catch (error) {
 
             console.error(
-                "❌ Erro ao buscar rota:",
+                "❌ Erro ao listar rotas:",
                 error
             );
 
             return response.status(500).json({
-                error: "Erro ao buscar rota.",
+                error:
+                    "Erro ao consultar histórico de rotas.",
             });
         }
-    });
+    }
+);
 
 
-// LISTAR HISTÓRICO DO USUÁRIO
+// ==========================================
+// DETALHES DE UMA ROTA
+// ==========================================
 
 router.get(
     "/:id",
@@ -186,39 +163,57 @@ router.get(
             const usuarioId =
                 request.usuarioId;
 
-
             if (!usuarioId) {
-                return response.status(400).json({
+                return response.status(401).json({
                     error:
-                        "usuarioId é obrigatório.",
+                        "Usuário não autenticado.",
                 });
             }
 
+            const rotaId =
+                Number(request.params.id);
 
-            const rotas =
-                await listRoutesByUser(
+            if (
+                !rotaId ||
+                Number.isNaN(rotaId)
+            ) {
+                return response.status(400).json({
+                    error:
+                        "ID da rota inválido.",
+                });
+            }
+
+            const rota =
+                await getRouteById(
+                    rotaId,
                     usuarioId
                 );
 
+            if (!rota) {
+                return response.status(404).json({
+                    error:
+                        "Rota não encontrada.",
+                });
+            }
 
-            return response.json({
-                rotas,
-            });
-
+            return response.json(
+                rota
+            );
 
         } catch (error) {
 
             console.error(
-                "❌ Erro ao listar rotas:",
+                "❌ Erro ao consultar rota:",
                 error
             );
 
             return response.status(500).json({
                 error:
-                    "Erro ao buscar histórico.",
+                    "Erro ao consultar rota.",
             });
         }
-    });
+    }
+);
 
 
 export default router;

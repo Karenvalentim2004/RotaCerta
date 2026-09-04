@@ -118,6 +118,8 @@ export async function optimizeDeliveryOrder(
             {
                 id: 1,
 
+                profile: "driving-car",
+
                 start: origem,
 
                 end: destinoFinal,

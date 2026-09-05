@@ -15,28 +15,60 @@ export async function createUser(
     email: string,
     senha: string
 ) {
-    const senhaHash = await bcrypt.hash(
-        senha,
-        10
-    );
 
-    const result = await db.execute({
-        sql: `
-            INSERT INTO usuarios (
+    // ==========================================
+    // VERIFICAR SE O EMAIL JÁ EXISTE
+    // ==========================================
+
+    const usuarioExistente =
+        await findUserByEmail(email);
+
+    if (usuarioExistente) {
+
+        throw new Error(
+            "EMAIL_ALREADY_EXISTS"
+        );
+    }
+
+
+    // ==========================================
+    // CRIPTOGRAFAR SENHA
+    // ==========================================
+
+    const senhaHash =
+        await bcrypt.hash(
+            senha,
+            10
+        );
+
+
+    // ==========================================
+    // CRIAR USUÁRIO
+    // ==========================================
+
+    const result =
+        await db.execute({
+
+            sql: `
+                INSERT INTO usuarios (
+                    nome,
+                    email,
+                    senha
+                )
+                VALUES (?, ?, ?)
+            `,
+
+            args: [
                 nome,
                 email,
-                senha
-            )
-            VALUES (?, ?, ?)
-        `,
-        args: [
-            nome,
-            email,
-            senhaHash,
-        ],
-    });
+                senhaHash,
+            ],
+        });
 
-    return Number(result.lastInsertRowid);
+
+    return Number(
+        result.lastInsertRowid
+    );
 }
 
 export async function findUserByEmail(

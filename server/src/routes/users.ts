@@ -61,14 +61,29 @@ router.post("/", async (request, response) => {
             },
         });
 
-    } catch (error) {
+    } catch (error: any) {
+
         console.error(
-            "❌ Erro ao cadastrar usuário:",
+            "❌ Erro ao criar usuário:",
             error
         );
 
+
+        if (
+            error?.message ===
+            "EMAIL_ALREADY_EXISTS"
+        ) {
+
+            return response.status(409).json({
+                error:
+                    "Este email já está cadastrado.",
+            });
+        }
+
+
         return response.status(500).json({
-            error: "Erro ao cadastrar usuário.",
+            error:
+                "Erro ao criar usuário.",
         });
     }
 });

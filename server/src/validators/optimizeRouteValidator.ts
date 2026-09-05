@@ -1,7 +1,6 @@
 import { z } from "zod";
 
 export const optimizeRouteSchema = z.object({
-
     localInicio: z
         .string()
         .trim()
@@ -18,76 +17,46 @@ export const optimizeRouteSchema = z.object({
             "O destino final é obrigatório."
         ),
 
+    veiculoId: z
+        .number()
+        .int()
+        .positive(
+            "O veículo selecionado é inválido."
+        ),
+
     valorCombustivel: z
         .number()
         .positive(
             "O valor do combustível deve ser maior que zero."
         ),
 
-    kmPorLitro: z
-        .number()
-        .positive(
-            "O consumo deve ser maior que zero."
-        ),
-
     entregas: z
         .array(
             z.object({
+                destinatario:
+                    z.string().nullable().optional(),
 
-                destinatario: z
-                    .string()
-                    .nullable()
-                    .optional(),
+                rua:
+                    z.string().nullable().optional(),
 
-                rua: z
-                    .string()
-                    .trim()
-                    .min(
-                        1,
-                        "A rua da entrega é obrigatória."
-                    ),
+                numero:
+                    z.string().nullable().optional(),
 
-                numero: z
-                    .string()
-                    .trim()
-                    .min(
-                        1,
-                        "O número da entrega é obrigatório."
-                    ),
+                bairro:
+                    z.string().nullable().optional(),
 
-                bairro: z
-                    .string()
-                    .trim()
-                    .min(
-                        1,
-                        "O bairro da entrega é obrigatório."
-                    ),
+                cidade:
+                    z.string().nullable().optional(),
 
-                cidade: z
-                    .string()
-                    .trim()
-                    .min(
-                        1,
-                        "A cidade da entrega é obrigatória."
-                    ),
+                estado:
+                    z.string().nullable().optional(),
 
-                estado: z
-                    .string()
-                    .trim()
-                    .min(
-                        2,
-                        "O estado da entrega é obrigatório."
-                    ),
-
-                complemento: z
-                    .string()
-                    .nullable()
-                    .optional(),
-
+                complemento:
+                    z.string().nullable().optional(),
             })
         )
         .min(
             1,
-            "Adicione pelo menos uma entrega."
+            "A rota deve possuir pelo menos uma entrega."
         ),
 });

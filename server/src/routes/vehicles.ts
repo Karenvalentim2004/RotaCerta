@@ -4,6 +4,7 @@ import {
     createVehicle,
     listVehiclesByUser,
     findVehicleById,
+    updateVehicle,
     deleteVehicle,
 } from "../services/vehicleService";
 
@@ -12,7 +13,10 @@ import {
     AuthenticatedRequest,
 } from "../middleware/authMiddleware";
 
-import { createVehicleSchema } from "../validators/vehicleValidator";
+import {
+    createVehicleSchema,
+    updateVehicleSchema,
+} from "../validators/vehicleValidator";
 
 const router = Router();
 
@@ -25,12 +29,17 @@ router.post(
         request: AuthenticatedRequest,
         response
     ) => {
+
         try {
-            const usuarioId = request.usuarioId;
+
+            const usuarioId =
+                request.usuarioId;
 
             if (!usuarioId) {
+
                 return response.status(401).json({
-                    error: "Usuário não autenticado.",
+                    error:
+                        "Usuário não autenticado.",
                 });
             }
 
@@ -40,9 +49,12 @@ router.post(
                 );
 
             if (!validacao.success) {
+
                 return response.status(400).json({
-                    error: "Dados do veículo inválidos.",
-                    detalhes: validacao.error.issues,
+                    error:
+                        "Dados do veículo inválidos.",
+                    detalhes:
+                        validacao.error.issues,
                 });
             }
 
@@ -63,8 +75,10 @@ router.post(
                 );
 
             return response.status(201).json({
+
                 message:
                     "Veículo cadastrado com sucesso!",
+
                 veiculo: {
                     id: veiculoId,
                     tipo,
@@ -72,9 +86,11 @@ router.post(
                     consumo,
                     combustivel,
                 },
+
             });
 
         } catch (error) {
+
             console.error(
                 "❌ Erro ao cadastrar veículo:",
                 error
@@ -88,7 +104,10 @@ router.post(
     }
 );
 
-// LISTAR VEÍCULOS DO USUÁRIO
+
+// ==========================================
+// LISTAR VEÍCULOS
+// ==========================================
 
 router.get(
     "/",
@@ -97,10 +116,14 @@ router.get(
         request: AuthenticatedRequest,
         response
     ) => {
+
         try {
-            const usuarioId = request.usuarioId;
+
+            const usuarioId =
+                request.usuarioId;
 
             if (!usuarioId) {
+
                 return response.status(401).json({
                     error:
                         "Usuário não autenticado.",
@@ -117,6 +140,7 @@ router.get(
             });
 
         } catch (error) {
+
             console.error(
                 "❌ Erro ao listar veículos:",
                 error
@@ -130,7 +154,10 @@ router.get(
     }
 );
 
+
+// ==========================================
 // BUSCAR VEÍCULO POR ID
+// ==========================================
 
 router.get(
     "/:id",
@@ -139,10 +166,14 @@ router.get(
         request: AuthenticatedRequest,
         response
     ) => {
+
         try {
-            const usuarioId = request.usuarioId;
+
+            const usuarioId =
+                request.usuarioId;
 
             if (!usuarioId) {
+
                 return response.status(401).json({
                     error:
                         "Usuário não autenticado.",
@@ -150,12 +181,17 @@ router.get(
             }
 
             const veiculoId =
-                Number(request.params.id);
+                Number(
+                    request.params.id
+                );
 
             if (
-                !Number.isInteger(veiculoId) ||
+                !Number.isInteger(
+                    veiculoId
+                ) ||
                 veiculoId <= 0
             ) {
+
                 return response.status(400).json({
                     error:
                         "ID do veículo inválido.",
@@ -169,6 +205,7 @@ router.get(
                 );
 
             if (!veiculo) {
+
                 return response.status(404).json({
                     error:
                         "Veículo não encontrado.",
@@ -180,6 +217,7 @@ router.get(
             });
 
         } catch (error) {
+
             console.error(
                 "❌ Erro ao buscar veículo:",
                 error
@@ -193,7 +231,124 @@ router.get(
     }
 );
 
+
+// ==========================================
+// EDITAR VEÍCULO
+// ==========================================
+
+router.put(
+    "/:id",
+    authMiddleware,
+    async (
+        request: AuthenticatedRequest,
+        response
+    ) => {
+
+        try {
+
+            const usuarioId =
+                request.usuarioId;
+
+            if (!usuarioId) {
+
+                return response.status(401).json({
+                    error:
+                        "Usuário não autenticado.",
+                });
+            }
+
+            const veiculoId =
+                Number(
+                    request.params.id
+                );
+
+            if (
+                !Number.isInteger(
+                    veiculoId
+                ) ||
+                veiculoId <= 0
+            ) {
+
+                return response.status(400).json({
+                    error:
+                        "ID do veículo inválido.",
+                });
+            }
+
+            const validacao =
+                updateVehicleSchema.safeParse(
+                    request.body
+                );
+
+            if (!validacao.success) {
+
+                return response.status(400).json({
+                    error:
+                        "Dados do veículo inválidos.",
+                    detalhes:
+                        validacao.error.issues,
+                });
+            }
+
+            const {
+                tipo,
+                modelo,
+                consumo,
+                combustivel,
+            } = validacao.data;
+
+            const atualizado =
+                await updateVehicle(
+                    veiculoId,
+                    usuarioId,
+                    tipo,
+                    modelo,
+                    consumo,
+                    combustivel
+                );
+
+            if (!atualizado) {
+
+                return response.status(404).json({
+                    error:
+                        "Veículo não encontrado.",
+                });
+            }
+
+            const veiculo =
+                await findVehicleById(
+                    veiculoId,
+                    usuarioId
+                );
+
+            return response.json({
+
+                message:
+                    "Veículo atualizado com sucesso!",
+
+                veiculo,
+
+            });
+
+        } catch (error) {
+
+            console.error(
+                "❌ Erro ao atualizar veículo:",
+                error
+            );
+
+            return response.status(500).json({
+                error:
+                    "Erro ao atualizar veículo.",
+            });
+        }
+    }
+);
+
+
+// ==========================================
 // EXCLUIR VEÍCULO
+// ==========================================
 
 router.delete(
     "/:id",
@@ -202,10 +357,14 @@ router.delete(
         request: AuthenticatedRequest,
         response
     ) => {
+
         try {
-            const usuarioId = request.usuarioId;
+
+            const usuarioId =
+                request.usuarioId;
 
             if (!usuarioId) {
+
                 return response.status(401).json({
                     error:
                         "Usuário não autenticado.",
@@ -213,12 +372,17 @@ router.delete(
             }
 
             const veiculoId =
-                Number(request.params.id);
+                Number(
+                    request.params.id
+                );
 
             if (
-                !Number.isInteger(veiculoId) ||
+                !Number.isInteger(
+                    veiculoId
+                ) ||
                 veiculoId <= 0
             ) {
+
                 return response.status(400).json({
                     error:
                         "ID do veículo inválido.",
@@ -232,6 +396,7 @@ router.delete(
                 );
 
             if (!removido) {
+
                 return response.status(404).json({
                     error:
                         "Veículo não encontrado.",
@@ -244,6 +409,7 @@ router.delete(
             });
 
         } catch (error) {
+
             console.error(
                 "❌ Erro ao excluir veículo:",
                 error
@@ -256,5 +422,6 @@ router.delete(
         }
     }
 );
+
 
 export default router;

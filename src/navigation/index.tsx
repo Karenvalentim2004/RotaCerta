@@ -1,14 +1,18 @@
 import { NavigationContainer } from "@react-navigation/native";
+
 import {
     createNativeStackNavigator,
 } from "@react-navigation/native-stack";
 
 import { Tabs } from "./Tabs";
-
+import {Login}  from "@/screens/Login";
 import { RouteResult } from "@/screens/RouteResult";
 import { Vehicles } from "@/screens/Vehicles";
 
+
 export type RootStackParamList = {
+
+    Login: undefined;
     Tabs: undefined;
 
     RouteResult: {
@@ -30,17 +34,29 @@ export type RootStackParamList = {
     Vehicles: undefined;
 };
 
+
 const Stack =
     createNativeStackNavigator<RootStackParamList>();
 
+
 export function Routes() {
+
     return (
+
         <NavigationContainer>
+
             <Stack.Navigator
+                initialRouteName="Login"
                 screenOptions={{
                     headerShown: false,
                 }}
             >
+
+                <Stack.Screen
+                    name="Login"
+                    component={Login}
+                />
+
                 <Stack.Screen
                     name="Tabs"
                     component={Tabs}
@@ -55,7 +71,10 @@ export function Routes() {
                     name="Vehicles"
                     component={Vehicles}
                 />
+
             </Stack.Navigator>
+
         </NavigationContainer>
+
     );
 }

@@ -24,7 +24,7 @@ app.use(express.json());
 
 app.get("/", (_request, response) => {
     response.json({
-        message: "Servidor RotaCerta funcionando 🚀",
+        message: "Servidor RotaCerta funcionando",
     });
 });
 
@@ -64,6 +64,6 @@ const PORT =
 
 app.listen(PORT, "0.0.0.0", () => {
     console.log(
-        `🚀 Servidor rodando na porta ${PORT}`
+        `Servidor rodando na porta ${PORT}`
     );
 });

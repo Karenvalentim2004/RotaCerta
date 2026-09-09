@@ -13,10 +13,18 @@ export const createVehicleSchema = z.object({
 
     consumo: z
         .number()
-        .positive("O consumo deve ser maior que zero."),
+        .positive(
+            "O consumo deve ser maior que zero."
+        ),
 
     combustivel: z
         .string()
         .trim()
-        .min(1, "O combustível é obrigatório."),
+        .min(
+            1,
+            "O combustível é obrigatório."
+        ),
 });
+
+export const updateVehicleSchema =
+    createVehicleSchema;

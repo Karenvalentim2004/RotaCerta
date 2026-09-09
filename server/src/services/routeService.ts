@@ -298,3 +298,62 @@ export async function listRoutesByUser(
 
     return result.rows;
 }
+
+// ==========================================
+// EXCLUIR ROTA
+// ==========================================
+
+export async function deleteRoute(
+    rotaId: number,
+    usuarioId: number
+) {
+
+    // Primeiro verifica se a rota pertence ao usuário
+
+    const rotaResult = await db.execute({
+        sql: `
+            SELECT id
+            FROM rotas
+            WHERE id = ?
+            AND usuario_id = ?
+        `,
+        args: [
+            rotaId,
+            usuarioId,
+        ],
+    });
+
+
+    if (rotaResult.rows.length === 0) {
+        return false;
+    }
+
+
+    // Exclui as entregas da rota
+
+    await db.execute({
+        sql: `
+            DELETE FROM entregas
+            WHERE rota_id = ?
+        `,
+        args: [rotaId],
+    });
+
+
+    // Exclui a rota
+
+    const result = await db.execute({
+        sql: `
+            DELETE FROM rotas
+            WHERE id = ?
+            AND usuario_id = ?
+        `,
+        args: [
+            rotaId,
+            usuarioId,
+        ],
+    });
+
+
+    return result.rowsAffected > 0;
+}

@@ -1,5 +1,10 @@
 import db from "../db/database";
 
+
+// ==========================================
+// CRIAR VEÍCULO
+// ==========================================
+
 export async function createVehicle(
     usuarioId: number,
     tipo: string,
@@ -7,94 +12,164 @@ export async function createVehicle(
     consumo: number,
     combustivel: string
 ) {
-    const result = await db.execute({
-        sql: `
-            INSERT INTO veiculos (
-                usuario_id,
-                tipo,
-                modelo,
-                consumo,
-                combustivel
-            )
-            VALUES (?, ?, ?, ?, ?)
-        `,
-        args: [
-            usuarioId,
-            tipo,
-            modelo,
-            consumo,
-            combustivel,
-        ],
-    });
 
-    return Number(result.lastInsertRowid);
-}
-
-export async function listVehiclesByUser(
-    usuarioId: number
-) {
-    const result = await db.execute({
-        sql: `
-            SELECT
-                id,
-                usuario_id,
+    const result =
+        await db.execute({
+            sql: `
+                INSERT INTO veiculos (
+                    usuario_id,
+                    tipo,
+                    modelo,
+                    consumo,
+                    combustivel
+                )
+                VALUES (?, ?, ?, ?, ?)
+            `,
+            args: [
+                usuarioId,
                 tipo,
                 modelo,
                 consumo,
                 combustivel,
-                criado_em
-            FROM veiculos
-            WHERE usuario_id = ?
-            ORDER BY id DESC
-        `,
-        args: [usuarioId],
-    });
+            ],
+        });
+
+    return Number(
+        result.lastInsertRowid
+    );
+}
+
+
+// ==========================================
+// LISTAR VEÍCULOS
+// ==========================================
+
+export async function listVehiclesByUser(
+    usuarioId: number
+) {
+
+    const result =
+        await db.execute({
+            sql: `
+                SELECT
+                    id,
+                    usuario_id,
+                    tipo,
+                    modelo,
+                    consumo,
+                    combustivel,
+                    criado_em
+                FROM veiculos
+                WHERE usuario_id = ?
+                ORDER BY id DESC
+            `,
+            args: [
+                usuarioId,
+            ],
+        });
 
     return result.rows;
 }
+
+
+// ==========================================
+// BUSCAR VEÍCULO
+// ==========================================
 
 export async function findVehicleById(
     id: number,
     usuarioId: number
 ) {
-    const result = await db.execute({
-        sql: `
-            SELECT
+
+    const result =
+        await db.execute({
+            sql: `
+                SELECT
+                    id,
+                    usuario_id,
+                    tipo,
+                    modelo,
+                    consumo,
+                    combustivel,
+                    criado_em
+                FROM veiculos
+                WHERE id = ?
+                AND usuario_id = ?
+            `,
+            args: [
                 id,
-                usuario_id,
+                usuarioId,
+            ],
+        });
+
+    return result.rows[0] ?? null;
+}
+
+
+// ==========================================
+// ATUALIZAR VEÍCULO
+// ==========================================
+
+export async function updateVehicle(
+    id: number,
+    usuarioId: number,
+    tipo: string,
+    modelo: string,
+    consumo: number,
+    combustivel: string
+) {
+
+    const result =
+        await db.execute({
+            sql: `
+                UPDATE veiculos
+                SET
+                    tipo = ?,
+                    modelo = ?,
+                    consumo = ?,
+                    combustivel = ?
+                WHERE id = ?
+                AND usuario_id = ?
+            `,
+            args: [
                 tipo,
                 modelo,
                 consumo,
                 combustivel,
-                criado_em
-            FROM veiculos
-            WHERE id = ?
-            AND usuario_id = ?
-        `,
-        args: [
-            id,
-            usuarioId,
-        ],
-    });
+                id,
+                usuarioId,
+            ],
+        });
 
-    return result.rows[0] ?? null;
+    return (
+        result.rowsAffected > 0
+    );
 }
+
+
+// ==========================================
+// EXCLUIR VEÍCULO
+// ==========================================
 
 export async function deleteVehicle(
     id: number,
     usuarioId: number
 ) {
-    const result = await db.execute({
-        sql: `
-            DELETE FROM veiculos
-            WHERE id = ?
-            AND usuario_id = ?
-        `,
-        args: [
-            id,
-            usuarioId,
-        ],
-    });
 
-    return result.rowsAffected > 0;
+    const result =
+        await db.execute({
+            sql: `
+                DELETE FROM veiculos
+                WHERE id = ?
+                AND usuario_id = ?
+            `,
+            args: [
+                id,
+                usuarioId,
+            ],
+        });
+
+    return (
+        result.rowsAffected > 0
+    );
 }

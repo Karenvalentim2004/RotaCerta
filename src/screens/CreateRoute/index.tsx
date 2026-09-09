@@ -35,7 +35,7 @@ import {
 import {
     getVehicles,
     Vehicle,
-} from "@/services/vehicleStorage";
+} from "@/services/vehicleService";
 
 import {
     RootStackParamList,
@@ -297,9 +297,17 @@ export function CreateRoute() {
             );
 
             return;
-
         }
 
+        if (!destinoFinal.trim()) {
+
+            Alert.alert(
+                "Destino final obrigatório",
+                "Informe o endereço onde a rota será finalizada."
+            );
+
+            return;
+        }
 
         if (destinos.length === 0) {
 
@@ -309,9 +317,7 @@ export function CreateRoute() {
             );
 
             return;
-
         }
-
 
         if (!selectedVehicle) {
 
@@ -321,14 +327,11 @@ export function CreateRoute() {
             );
 
             return;
-
         }
-
 
         try {
 
             setLoading(true);
-
 
             console.log(
                 "🚀 Iniciando otimização..."
@@ -354,49 +357,21 @@ export function CreateRoute() {
                 selectedVehicle
             );
 
-            // CONFIGURAÇÃO DO VEÍCULO
-
             const valorCombustivel = 6.5;
-
-            const kmPorLitro =
-                Number(
-                    selectedVehicle.consumo
-                );
-
-            // VALIDAR CONSUMO
-
-            if (
-                !kmPorLitro ||
-                kmPorLitro <= 0
-            ) {
-
-                Alert.alert(
-                    "Consumo inválido",
-                    "O veículo selecionado possui um consumo inválido."
-                );
-
-                return;
-
-            }
-
-            // CHAMAR API
 
             const resultado =
                 await optimizeRoute(
                     origem.trim(),
                     destinoFinal.trim(),
+                    selectedVehicle.id,
                     valorCombustivel,
-                    kmPorLitro,
                     destinos
                 );
-
 
             console.log(
                 "✅ Rota otimizada:",
                 resultado
             );
-
-            // IR PARA RESULTADO
 
             navigation.navigate(
                 "RouteResult",
@@ -412,7 +387,6 @@ export function CreateRoute() {
                 error
             );
 
-
             Alert.alert(
                 "Erro",
                 "Não foi possível otimizar a rota. Tente novamente."
@@ -423,7 +397,6 @@ export function CreateRoute() {
             setLoading(false);
 
         }
-
     }
 
     // RENDER

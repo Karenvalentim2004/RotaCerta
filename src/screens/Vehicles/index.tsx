@@ -8,23 +8,36 @@ import {
     Alert,
 } from "react-native";
 
-import {
-    getVehicles,
-    saveVehicles,
-    Vehicle,
-} from "@/services/vehicleStorage";
-
 import { useState, useEffect } from "react";
-import { useNavigation } from "@react-navigation/native";
+
+import {
+    useNavigation,
+} from "@react-navigation/native";
 
 import FontAwesome6 from "@expo/vector-icons/FontAwesome6";
 import Ionicons from "@expo/vector-icons/Ionicons";
 
+import {
+    getVehicles,
+    createVehicle,
+    updateVehicle,
+    deleteVehicle,
+    Vehicle,
+} from "@/services/vehicleService";
+
 import { colors } from "@/theme/colors";
 import { styles } from "./styles";
 
+
 export function Vehicles() {
-    const navigation = useNavigation();
+
+    const navigation =
+        useNavigation();
+
+
+    // ==========================================
+    // STATES
+    // ==========================================
 
     const [vehicles, setVehicles] =
         useState<Vehicle[]>([]);
@@ -32,9 +45,8 @@ export function Vehicles() {
     const [formVisible, setFormVisible] =
         useState(false);
 
-    // ID do veículo que está sendo editado
     const [editingId, setEditingId] =
-        useState<string | null>(null);
+        useState<number | null>(null);
 
     const [tipo, setTipo] =
         useState("Moto");
@@ -48,167 +60,266 @@ export function Vehicles() {
     const [combustivel, setCombustivel] =
         useState("Gasolina");
 
-    // =========================
+    const [loading, setLoading] =
+        useState(false);
+
+
+    // ==========================================
     // CARREGAR VEÍCULOS
-    // =========================
+    // ==========================================
 
     useEffect(() => {
-        async function loadVehicles() {
-            try {
-                const savedVehicles =
-                    await getVehicles();
-
-                setVehicles(savedVehicles);
-            } catch (error) {
-                console.error(
-                    "Erro ao carregar veículos:",
-                    error
-                );
-            }
-        }
 
         loadVehicles();
+
     }, []);
 
-    // =========================
-    // LIMPAR FORMULÁRIO
-    // =========================
 
-    function clearForm() {
-        setTipo("Moto");
-        setModelo("");
-        setConsumo("");
-        setCombustivel("Gasolina");
-        setEditingId(null);
-        setFormVisible(false);
-    }
-
-    // =========================
-    // EDITAR VEÍCULO
-    // =========================
-
-    function handleEditVehicle(
-        vehicle: Vehicle
-    ) {
-        setEditingId(vehicle.id);
-
-        setTipo(vehicle.tipo);
-        setModelo(vehicle.modelo);
-        setConsumo(vehicle.consumo);
-        setCombustivel(vehicle.combustivel);
-
-        setFormVisible(true);
-    }
-
-    // =========================
-    // SALVAR / EDITAR
-    // =========================
-
-    async function handleSaveVehicle() {
-        if (
-            !modelo.trim() ||
-            !consumo.trim()
-        ) {
-            Alert.alert(
-                "Campos obrigatórios",
-                "Preencha o modelo e o consumo do veículo."
-            );
-
-            return;
-        }
+    async function loadVehicles() {
 
         try {
-            // =========================
-            // EDITANDO
-            // =========================
 
-            if (editingId) {
-                const updatedVehicles =
-                    vehicles.map((vehicle) => {
+            setLoading(true);
 
-                        if (
-                            vehicle.id ===
-                            editingId
-                        ) {
-                            return {
-                                ...vehicle,
-                                tipo,
-                                modelo:
-                                    modelo.trim(),
-                                consumo:
-                                    consumo.trim(),
-                                combustivel,
-                            };
-                        }
-
-                        return vehicle;
-                    });
-
-                await saveVehicles(
-                    updatedVehicles
-                );
-
-                setVehicles(
-                    updatedVehicles
-                );
-
-                Alert.alert(
-                    "Veículo atualizado",
-                    "As informações do veículo foram atualizadas."
-                );
-
-                clearForm();
-
-                return;
-            }
-
-            // =========================
-            // NOVO VEÍCULO
-            // =========================
-
-            const newVehicle: Vehicle = {
-                id: Date.now().toString(),
-                tipo,
-                modelo: modelo.trim(),
-                consumo: consumo.trim(),
-                combustivel,
-            };
-
-            const updatedVehicles = [
-                ...vehicles,
-                newVehicle,
-            ];
-
-            await saveVehicles(
-                updatedVehicles
-            );
+            const savedVehicles =
+                await getVehicles();
 
             setVehicles(
-                updatedVehicles
+                savedVehicles
             );
 
-            clearForm();
-
         } catch (error) {
+
             console.error(
-                "Erro ao salvar veículo:",
+                "❌ Erro ao carregar veículos:",
                 error
             );
 
             Alert.alert(
                 "Erro",
-                "Não foi possível salvar o veículo."
+                "Não foi possível carregar seus veículos."
             );
+
+        } finally {
+
+            setLoading(false);
+
         }
+
     }
 
-    // =========================
+
+    // ==========================================
+    // LIMPAR FORMULÁRIO
+    // ==========================================
+
+    function clearForm() {
+
+        setTipo("Moto");
+
+        setModelo("");
+
+        setConsumo("");
+
+        setCombustivel("Gasolina");
+
+        setEditingId(null);
+
+        setFormVisible(false);
+
+    }
+
+
+    // ==========================================
+    // EDITAR VEÍCULO
+    // ==========================================
+
+    function handleEditVehicle(
+        vehicle: Vehicle
+    ) {
+
+        setEditingId(
+            vehicle.id
+        );
+
+        setTipo(
+            vehicle.tipo
+        );
+
+        setModelo(
+            vehicle.modelo
+        );
+
+        setConsumo(
+            String(vehicle.consumo)
+        );
+
+        setCombustivel(
+            vehicle.combustivel
+        );
+
+        setFormVisible(true);
+
+    }
+
+
+    // ==========================================
+    // SALVAR VEÍCULO
+    // ==========================================
+
+    async function handleSaveVehicle() {
+
+        if (!modelo.trim()) {
+
+            Alert.alert(
+                "Campos obrigatórios",
+                "Informe o modelo do veículo."
+            );
+
+            return;
+
+        }
+
+
+        if (!consumo.trim()) {
+
+            Alert.alert(
+                "Campos obrigatórios",
+                "Informe o consumo do veículo."
+            );
+
+            return;
+
+        }
+
+
+        const consumoNumerico =
+            Number(
+                consumo.replace(",", ".")
+            );
+
+
+        if (
+            !Number.isFinite(
+                consumoNumerico
+            ) ||
+            consumoNumerico <= 0
+        ) {
+
+            Alert.alert(
+                "Consumo inválido",
+                "Informe um consumo válido, por exemplo: 35."
+            );
+
+            return;
+
+        }
+
+
+        try {
+
+            setLoading(true);
+
+
+            // ==========================================
+            // NOVO VEÍCULO
+            // ==========================================
+
+            if (!editingId) {
+
+                const novoVeiculo =
+                    await createVehicle(
+                        tipo,
+                        modelo.trim(),
+                        consumoNumerico,
+                        combustivel
+                    );
+
+
+                setVehicles(
+                    current => [
+                        novoVeiculo,
+                        ...current,
+                    ]
+                );
+
+
+                Alert.alert(
+                    "Sucesso",
+                    "Veículo cadastrado com sucesso!"
+                );
+
+
+                clearForm();
+
+                return;
+
+            }
+
+
+            // ==========================================
+            // EDITAR VEÍCULO
+            // ==========================================
+
+            const veiculoAtualizado =
+                await updateVehicle(
+                    editingId,
+                    tipo,
+                    modelo.trim(),
+                    consumoNumerico,
+                    combustivel
+                );
+
+
+            setVehicles(
+                current =>
+                    current.map(
+                        vehicle =>
+                            vehicle.id === editingId
+                                ? veiculoAtualizado
+                                : vehicle
+                    )
+            );
+
+
+            Alert.alert(
+                "Sucesso",
+                "Veículo atualizado com sucesso!"
+            );
+
+
+            clearForm();
+
+        } catch (error: any) {
+
+            console.error(
+                "❌ Erro ao salvar veículo:",
+                error
+            );
+
+            Alert.alert(
+                "Erro",
+                error?.message ||
+                "Não foi possível salvar o veículo."
+            );
+
+        } finally {
+
+            setLoading(false);
+
+        }
+
+    }
+
+
+    // ==========================================
     // REMOVER VEÍCULO
-    // =========================
+    // ==========================================
 
     function handleRemoveVehicle(
-        id: string
+        id: number
     ) {
+
         Alert.alert(
             "Excluir veículo",
             "Tem certeza que deseja excluir este veículo?",
@@ -217,41 +328,76 @@ export function Vehicles() {
                     text: "Cancelar",
                     style: "cancel",
                 },
+
                 {
                     text: "Excluir",
                     style: "destructive",
-                    onPress: async () => {
-                        try {
-                            const updatedVehicles =
-                                vehicles.filter(
-                                    (vehicle) =>
-                                        vehicle.id !==
-                                        id
-                                );
 
-                            await saveVehicles(
-                                updatedVehicles
+                    onPress: async () => {
+
+                        try {
+
+                            setLoading(true);
+
+
+                            await deleteVehicle(
+                                id
                             );
+
 
                             setVehicles(
-                                updatedVehicles
+                                current =>
+                                    current.filter(
+                                        vehicle =>
+                                            vehicle.id !== id
+                                    )
                             );
-                        } catch (error) {
+
+
+                            Alert.alert(
+                                "Sucesso",
+                                "Veículo excluído com sucesso!"
+                            );
+
+                        } catch (error: any) {
+
                             console.error(
-                                "Erro ao excluir veículo:",
+                                "❌ Erro ao excluir veículo:",
                                 error
                             );
+
+                            Alert.alert(
+                                "Erro",
+                                error?.message ||
+                                "Não foi possível excluir o veículo."
+                            );
+
+                        } finally {
+
+                            setLoading(false);
+
                         }
+
                     },
                 },
             ]
         );
+
     }
 
+
+    // ==========================================
+    // RENDER
+    // ==========================================
+
     return (
+
         <SafeAreaView
-            style={styles.container}
+            style={
+                styles.container
+            }
         >
+
             <ScrollView
                 contentContainerStyle={
                     styles.content
@@ -261,11 +407,15 @@ export function Vehicles() {
                 }
             >
 
-                {/* ========================= */}
+                {/* ========================================== */}
                 {/* CABEÇALHO */}
-                {/* ========================= */}
+                {/* ========================================== */}
 
-                <View style={styles.header}>
+                <View
+                    style={
+                        styles.header
+                    }
+                >
 
                     <TouchableOpacity
                         style={
@@ -275,6 +425,7 @@ export function Vehicles() {
                             navigation.goBack()
                         }
                     >
+
                         <Ionicons
                             name="arrow-back"
                             size={28}
@@ -282,13 +433,16 @@ export function Vehicles() {
                                 colors.black
                             }
                         />
+
                     </TouchableOpacity>
+
 
                     <View
                         style={
                             styles.headerText
                         }
                     >
+
                         <Text
                             style={
                                 styles.title
@@ -296,6 +450,7 @@ export function Vehicles() {
                         >
                             Meus Veículos
                         </Text>
+
 
                         <Text
                             style={
@@ -305,16 +460,55 @@ export function Vehicles() {
                             Configure os veículos usados
                             nas suas rotas.
                         </Text>
+
                     </View>
 
                 </View>
 
-                {/* ========================= */}
+
+                {/* ========================================== */}
+                {/* CARREGANDO */}
+                {/* ========================================== */}
+
+                {loading &&
+                    vehicles.length === 0 && (
+
+                        <Text
+                            style={
+                                styles.emptyText
+                            }
+                        >
+                            Carregando veículos...
+                        </Text>
+
+                    )}
+
+
+                {/* ========================================== */}
+                {/* LISTA VAZIA */}
+                {/* ========================================== */}
+
+                {!loading &&
+                    vehicles.length === 0 &&
+                    !formVisible && (
+
+                        <Text
+                            style={
+                                styles.emptyText
+                            }
+                        >
+                            Nenhum veículo cadastrado.
+                        </Text>
+
+                    )}
+
+
+                {/* ========================================== */}
                 {/* LISTA DE VEÍCULOS */}
-                {/* ========================= */}
+                {/* ========================================== */}
 
                 {vehicles.map(
-                    (vehicle) => (
+                    vehicle => (
 
                         <View
                             key={
@@ -332,10 +526,12 @@ export function Vehicles() {
                                     styles.vehicleIconContainer
                                 }
                             >
+
                                 <FontAwesome6
                                     name={
-                                        vehicle.tipo ===
-                                            "Moto"
+                                        vehicle.tipo
+                                            .toLowerCase() ===
+                                            "moto"
                                             ? "motorcycle"
                                             : "car"
                                     }
@@ -344,7 +540,9 @@ export function Vehicles() {
                                         colors.green[700]
                                     }
                                 />
+
                             </View>
+
 
                             {/* INFORMAÇÕES */}
 
@@ -364,6 +562,7 @@ export function Vehicles() {
                                     }
                                 </Text>
 
+
                                 <Text
                                     style={
                                         styles.vehicleModel
@@ -375,6 +574,7 @@ export function Vehicles() {
                                     }
                                 </Text>
 
+
                                 <View
                                     style={
                                         styles.vehicleDetails
@@ -382,6 +582,7 @@ export function Vehicles() {
                                 >
 
                                     <View>
+
                                         <Text
                                             style={
                                                 styles.detailLabel
@@ -389,6 +590,7 @@ export function Vehicles() {
                                         >
                                             Consumo
                                         </Text>
+
 
                                         <Text
                                             style={
@@ -400,9 +602,12 @@ export function Vehicles() {
                                             }{" "}
                                             km/L
                                         </Text>
+
                                     </View>
 
+
                                     <View>
+
                                         <Text
                                             style={
                                                 styles.detailLabel
@@ -410,6 +615,7 @@ export function Vehicles() {
                                         >
                                             Combustível
                                         </Text>
+
 
                                         <Text
                                             style={
@@ -420,13 +626,17 @@ export function Vehicles() {
                                                 vehicle.combustivel
                                             }
                                         </Text>
+
                                     </View>
 
                                 </View>
 
                             </View>
 
+
+                            {/* ========================================== */}
                             {/* AÇÕES */}
+                            {/* ========================================== */}
 
                             <View
                                 style={
@@ -445,7 +655,11 @@ export function Vehicles() {
                                             vehicle
                                         )
                                     }
+                                    disabled={
+                                        loading
+                                    }
                                 >
+
                                     <Ionicons
                                         name="create-outline"
                                         size={21}
@@ -453,7 +667,9 @@ export function Vehicles() {
                                             colors.green[700]
                                         }
                                     />
+
                                 </TouchableOpacity>
+
 
                                 {/* EXCLUIR */}
 
@@ -466,7 +682,11 @@ export function Vehicles() {
                                             vehicle.id
                                         )
                                     }
+                                    disabled={
+                                        loading
+                                    }
                                 >
+
                                     <Text
                                         style={
                                             styles.deleteText
@@ -474,17 +694,20 @@ export function Vehicles() {
                                     >
                                         ×
                                     </Text>
+
                                 </TouchableOpacity>
 
                             </View>
 
                         </View>
+
                     )
                 )}
 
-                {/* ========================= */}
+
+                {/* ========================================== */}
                 {/* FORMULÁRIO */}
-                {/* ========================= */}
+                {/* ========================================== */}
 
                 {formVisible && (
 
@@ -504,7 +727,10 @@ export function Vehicles() {
                                 : "Novo veículo"}
                         </Text>
 
+
+                        {/* ========================================== */}
                         {/* TIPO */}
+                        {/* ========================================== */}
 
                         <Text
                             style={
@@ -513,6 +739,7 @@ export function Vehicles() {
                         >
                             Tipo
                         </Text>
+
 
                         <View
                             style={
@@ -525,8 +752,8 @@ export function Vehicles() {
                             <TouchableOpacity
                                 style={[
                                     styles.typeButton,
-                                    tipo ===
-                                    "Moto" &&
+
+                                    tipo === "Moto" &&
                                     styles.typeButtonSelected,
                                 ]}
                                 onPress={() =>
@@ -540,18 +767,18 @@ export function Vehicles() {
                                     name="motorcycle"
                                     size={18}
                                     color={
-                                        tipo ===
-                                            "Moto"
+                                        tipo === "Moto"
                                             ? colors.white
                                             : colors.gray[700]
                                     }
                                 />
 
+
                                 <Text
                                     style={[
                                         styles.typeText,
-                                        tipo ===
-                                        "Moto" &&
+
+                                        tipo === "Moto" &&
                                         styles.typeTextSelected,
                                     ]}
                                 >
@@ -560,13 +787,14 @@ export function Vehicles() {
 
                             </TouchableOpacity>
 
+
                             {/* CARRO */}
 
                             <TouchableOpacity
                                 style={[
                                     styles.typeButton,
-                                    tipo ===
-                                    "Carro" &&
+
+                                    tipo === "Carro" &&
                                     styles.typeButtonSelected,
                                 ]}
                                 onPress={() =>
@@ -580,18 +808,18 @@ export function Vehicles() {
                                     name="car"
                                     size={18}
                                     color={
-                                        tipo ===
-                                            "Carro"
+                                        tipo === "Carro"
                                             ? colors.white
                                             : colors.gray[700]
                                     }
                                 />
 
+
                                 <Text
                                     style={[
                                         styles.typeText,
-                                        tipo ===
-                                        "Carro" &&
+
+                                        tipo === "Carro" &&
                                         styles.typeTextSelected,
                                     ]}
                                 >
@@ -602,7 +830,10 @@ export function Vehicles() {
 
                         </View>
 
+
+                        {/* ========================================== */}
                         {/* MODELO */}
+                        {/* ========================================== */}
 
                         <Text
                             style={
@@ -612,6 +843,7 @@ export function Vehicles() {
                             Modelo
                         </Text>
 
+
                         <TextInput
                             style={
                                 styles.input
@@ -620,13 +852,18 @@ export function Vehicles() {
                             placeholderTextColor={
                                 colors.gray[500]
                             }
-                            value={modelo}
+                            value={
+                                modelo
+                            }
                             onChangeText={
                                 setModelo
                             }
                         />
 
+
+                        {/* ========================================== */}
                         {/* CONSUMO */}
+                        {/* ========================================== */}
 
                         <Text
                             style={
@@ -635,6 +872,7 @@ export function Vehicles() {
                         >
                             Consumo médio
                         </Text>
+
 
                         <TextInput
                             style={
@@ -645,13 +883,18 @@ export function Vehicles() {
                                 colors.gray[500]
                             }
                             keyboardType="decimal-pad"
-                            value={consumo}
+                            value={
+                                consumo
+                            }
                             onChangeText={
                                 setConsumo
                             }
                         />
 
+
+                        {/* ========================================== */}
                         {/* COMBUSTÍVEL */}
+                        {/* ========================================== */}
 
                         <Text
                             style={
@@ -660,6 +903,7 @@ export function Vehicles() {
                         >
                             Combustível
                         </Text>
+
 
                         <View
                             style={
@@ -672,7 +916,7 @@ export function Vehicles() {
                                 "Etanol",
                                 "Diesel",
                             ].map(
-                                (item) => (
+                                item => (
 
                                     <TouchableOpacity
                                         key={
@@ -680,6 +924,7 @@ export function Vehicles() {
                                         }
                                         style={[
                                             styles.fuelButton,
+
                                             combustivel ===
                                             item &&
                                             styles.fuelButtonSelected,
@@ -694,6 +939,7 @@ export function Vehicles() {
                                         <Text
                                             style={[
                                                 styles.fuelText,
+
                                                 combustivel ===
                                                 item &&
                                                 styles.fuelTextSelected,
@@ -711,7 +957,10 @@ export function Vehicles() {
 
                         </View>
 
+
+                        {/* ========================================== */}
                         {/* SALVAR */}
+                        {/* ========================================== */}
 
                         <TouchableOpacity
                             style={
@@ -720,19 +969,29 @@ export function Vehicles() {
                             onPress={
                                 handleSaveVehicle
                             }
+                            disabled={
+                                loading
+                            }
                         >
+
                             <Text
                                 style={
                                     styles.saveButtonText
                                 }
                             >
-                                {editingId
-                                    ? "Salvar alterações"
-                                    : "Salvar veículo"}
+                                {loading
+                                    ? "Salvando..."
+                                    : editingId
+                                        ? "Salvar alterações"
+                                        : "Salvar veículo"}
                             </Text>
+
                         </TouchableOpacity>
 
+
+                        {/* ========================================== */}
                         {/* CANCELAR */}
+                        {/* ========================================== */}
 
                         <TouchableOpacity
                             style={
@@ -741,7 +1000,11 @@ export function Vehicles() {
                             onPress={
                                 clearForm
                             }
+                            disabled={
+                                loading
+                            }
                         >
+
                             <Text
                                 style={
                                     styles.cancelText
@@ -749,14 +1012,17 @@ export function Vehicles() {
                             >
                                 Cancelar
                             </Text>
+
                         </TouchableOpacity>
 
                     </View>
+
                 )}
 
-                {/* ========================= */}
+
+                {/* ========================================== */}
                 {/* ADICIONAR */}
-                {/* ========================= */}
+                {/* ========================================== */}
 
                 {!formVisible && (
 
@@ -765,13 +1031,23 @@ export function Vehicles() {
                             styles.addButton
                         }
                         onPress={() => {
+
                             setEditingId(
                                 null
                             );
 
-                            setTipo("Moto");
-                            setModelo("");
-                            setConsumo("");
+                            setTipo(
+                                "Moto"
+                            );
+
+                            setModelo(
+                                ""
+                            );
+
+                            setConsumo(
+                                ""
+                            );
+
                             setCombustivel(
                                 "Gasolina"
                             );
@@ -779,8 +1055,13 @@ export function Vehicles() {
                             setFormVisible(
                                 true
                             );
+
                         }}
+                        disabled={
+                            loading
+                        }
                     >
+
                         <Text
                             style={
                                 styles.addButtonText
@@ -788,11 +1069,15 @@ export function Vehicles() {
                         >
                             + Adicionar veículo
                         </Text>
+
                     </TouchableOpacity>
 
                 )}
 
             </ScrollView>
+
         </SafeAreaView>
+
     );
+
 }

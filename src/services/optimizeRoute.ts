@@ -1,7 +1,4 @@
-import {
-    getAuthHeaders,
-} from "@/services/authService";
-
+import { getAuthHeaders } from "@/services/authService";
 
 // ==========================================
 // DESTINO DA ROTA
@@ -17,35 +14,36 @@ export interface RouteDestination {
     complemento?: string | null;
 }
 
-
 // ==========================================
 // PONTO DA ROTA
 // ==========================================
 
 export interface RoutePoint {
     ordem: number;
-
     tipo:
         | "ORIGEM"
         | "ENTREGA"
         | "DESTINO_FINAL";
-
     enderecoFormatado: string;
-
     destinatario?: string | null;
-
     latitude: number;
-
     longitude: number;
 }
 
+// ==========================================
+// GEOMETRIA DA ROTA
+// ==========================================
+
+export interface RouteGeometry {
+    type: "LineString";
+    coordinates: [number, number][];
+}
 
 // ==========================================
 // ROTA OTIMIZADA
 // ==========================================
 
 export interface OptimizedRoute {
-
     id?: number;
 
     veiculoId?:
@@ -55,31 +53,22 @@ export interface OptimizedRoute {
 
     distanciaTotalKm: number;
 
-    tempoDeslocamentoMinutos?:
-        number;
+    tempoDeslocamentoMinutos?: number;
 
-    tempoParadasMinutos?:
-        number;
+    tempoParadasMinutos?: number;
 
-    tempoTotalMinutos?:
-        number;
+    tempoTotalMinutos?: number;
 
-    custoEstimadoCombustivel:
-        number;
+    custoEstimadoCombustivel: number;
 
-    litrosConsumidos:
-        number;
+    litrosConsumidos: number;
 
-    resumoRota:
-        string;
+    resumoRota: string;
 
-    rotaOrdenada:
-        RoutePoint[];
+    rotaOrdenada: RoutePoint[];
 
-    geometria?:
-        any;
+    geometria?: RouteGeometry;
 }
-
 
 // ==========================================
 // OTIMIZAR ROTA
@@ -96,40 +85,33 @@ export async function optimizeRoute(
     const API_URL =
         "http://10.0.2.2:3000/api/optimize-route";
 
-
     console.log(
         "🌐 Chamando API:",
         API_URL
     );
-
 
     console.log(
         "🚗 Veículo enviado:",
         veiculoId
     );
 
-
     console.log(
         "⛽ Valor combustível:",
         valorCombustivel
     );
-
 
     console.log(
         "📦 Entregas:",
         entregas
     );
 
-
     try {
-
         // ==========================================
-        // PEGAR HEADERS AUTENTICADOS
+        // HEADERS
         // ==========================================
 
         const headers =
             await getAuthHeaders();
-
 
         // ==========================================
         // REQUISIÇÃO
@@ -140,32 +122,22 @@ export async function optimizeRoute(
                 API_URL,
                 {
                     method: "POST",
-
                     headers,
-
                     body: JSON.stringify({
-
                         localInicio,
-
                         destinoFinal,
-
                         veiculoId:
                             Number(veiculoId),
-
                         valorCombustivel,
-
                         entregas,
-
                     }),
                 }
             );
-
 
         console.log(
             "📡 Status da API:",
             response.status
         );
-
 
         // ==========================================
         // RESPOSTA
@@ -174,26 +146,21 @@ export async function optimizeRoute(
         const data =
             await response.json();
 
-
         console.log(
             "📦 Resposta da API:",
             data
         );
 
-
         // ==========================================
-        // ERRO DA API
+        // ERRO
         // ==========================================
 
         if (!response.ok) {
-
             throw new Error(
                 data?.error ||
                 "Erro ao otimizar a rota."
             );
-
         }
-
 
         // ==========================================
         // RETORNO
@@ -209,7 +176,5 @@ export async function optimizeRoute(
         );
 
         throw error;
-
     }
-
 }

@@ -4,6 +4,7 @@ import {
     View,
     TouchableOpacity,
     Share,
+    ScrollView,
 } from "react-native";
 
 import { useRef } from "react";
@@ -16,6 +17,7 @@ import MapView, {
 } from "react-native-maps";
 
 import Ionicons from "@expo/vector-icons/Ionicons";
+import FontAwesome6 from "@expo/vector-icons/FontAwesome6";
 
 import {
     NativeStackScreenProps,
@@ -28,41 +30,25 @@ import {
 import { colors } from "@/theme/colors";
 import { styles } from "./styles";
 
-// ==========================================
-// PROPS
-// ==========================================
-
 type Props = NativeStackScreenProps<
     RootStackParamList,
     "RouteResult"
 >;
-
-// ==========================================
-// COMPONENTE
-// ==========================================
 
 export function RouteResult({
     route,
     navigation,
 }: Props) {
 
-    // ==========================================
     // REFERÊNCIA DO MAPA
-    // ==========================================
 
-    const mapRef =
-        useRef<MapView>(null);
+    const mapRef = useRef<MapView>(null);
 
-    // ==========================================
     // RESULTADO DA ROTA
-    // ==========================================
 
-    const resultado =
-        route.params.route;
+    const resultado = route.params.route;
 
-    // ==========================================
     // QUANTIDADE DE ENTREGAS
-    // ==========================================
 
     const quantidadeEntregas =
         resultado.rotaOrdenada.filter(
@@ -70,43 +56,28 @@ export function RouteResult({
                 parada.tipo === "ENTREGA"
         ).length;
 
-    // ==========================================
-    // TEMPO DAS PARADAS
-    // ==========================================
+    // TEMPO TOTAL
 
     const tempoParadas =
-        resultado.tempoParadasMinutos ??
         quantidadeEntregas * 5;
 
-    // ==========================================
-    // TEMPO TOTAL
-    // ==========================================
-
     const tempoTotal =
-        resultado.tempoTotalMinutos ??
-        (
-            (resultado.tempoDeslocamentoMinutos ?? 0) +
-            tempoParadas
-        );
+        resultado.tempoDeslocamentoMinutos +
+        tempoParadas;
 
-    // ==========================================
     // COORDENADAS DA ROTA
-    // ==========================================
 
     const coordenadasRota: LatLng[] =
-        resultado.geometria?.coordinates?.map(
+        resultado.geometria.coordinates.map(
             ([longitude, latitude]) => ({
                 latitude,
                 longitude,
             })
-        ) ?? [];
+        );
 
-    // ==========================================
     // AJUSTAR MAPA À ROTA
-    // ==========================================
 
     function ajustarMapa() {
-
         if (
             coordenadasRota.length === 0 ||
             !mapRef.current
@@ -114,18 +85,20 @@ export function RouteResult({
             return;
         }
 
-        mapRef.current.fitToCoordinates(
-            coordenadasRota,
-            {
-                edgePadding: {
-                    top: 50,
-                    right: 40,
-                    bottom: 50,
-                    left: 40,
-                },
-                animated: false,
-            }
-        );
+        setTimeout(() => {
+            mapRef.current?.fitToCoordinates(
+                coordenadasRota,
+                {
+                    edgePadding: {
+                        top: 50,
+                        right: 50,
+                        bottom: 50,
+                        left: 50,
+                    },
+                    animated: true,
+                }
+            );
+        }, 300);
     }
 
     // ==========================================
@@ -133,11 +106,8 @@ export function RouteResult({
     // ==========================================
 
     async function handleShare() {
-
         try {
-
             await Share.share({
-
                 message:
                     `Rota otimizada\n\n` +
                     `Distância: ${resultado.distanciaTotalKm.toFixed(
@@ -150,493 +120,620 @@ export function RouteResult({
                     `Custo estimado: R$ ${resultado.custoEstimadoCombustivel.toFixed(
                         2
                     )}`,
-
             });
-
         } catch (error) {
-
             console.error(
-                "❌ Erro ao compartilhar:",
+                "Erro ao compartilhar:",
                 error
             );
-
         }
     }
 
-    // ==========================================
+
     // INICIAR ROTA
-    // ==========================================
 
     function handleStartRoute() {
 
-        console.log(
-            "🚀 Iniciando rota"
+        navigation.navigate(
+            "RouteMap",
+            {
+                route: resultado,
+            }
         );
-
-        // Próxima etapa:
-        // abrir tela de rota em andamento
     }
 
-    // ==========================================
-    // TELA
-    // ==========================================
+    // RENDER
 
     return (
-
         <SafeAreaView
             style={styles.container}
         >
-
-            {/* ==========================================
-                CABEÇALHO
-            ========================================== */}
-
-            <View
-                style={styles.header}
-            >
-
-                {/* VOLTAR */}
-
-                <TouchableOpacity
-                    style={
-                        styles.headerButton
-                    }
-                    onPress={() =>
-                        navigation.goBack()
-                    }
-                >
-
-                    <Ionicons
-                        name="chevron-back"
-                        size={28}
-                        color={
-                            colors.black
-                        }
-                    />
-
-                </TouchableOpacity>
-
-
-                {/* TÍTULO */}
-
-                <Text
-                    style={
-                        styles.headerTitle
-                    }
-                >
-                    ROTA
-                </Text>
-
-
-                {/* COMPARTILHAR */}
-
-                <TouchableOpacity
-                    style={
-                        styles.headerButton
-                    }
-                    onPress={
-                        handleShare
-                    }
-                >
-
-                    <Ionicons
-                        name="share-outline"
-                        size={23}
-                        color={
-                            colors.black
-                        }
-                    />
-
-                </TouchableOpacity>
-
-            </View>
-
-
-            {/* ==========================================
-                MAPA
-            ========================================== */}
-
-            <View
-                style={
-                    styles.mapContainer
+            <ScrollView
+                showsVerticalScrollIndicator={
+                    false
+                }
+                contentContainerStyle={
+                    styles.scrollContent
                 }
             >
 
-                {coordenadasRota.length > 0 ? (
+                    {/* CABEÇALHO */}
 
-                    <MapView
-                        ref={mapRef}
-                        style={styles.map}
-                        provider={
-                            PROVIDER_GOOGLE
+                <View
+                    style={styles.header}
+                >
+                    <TouchableOpacity
+                        style={
+                            styles.headerButton
                         }
-
-                        initialRegion={{
-                            latitude:
-                                coordenadasRota[0]
-                                    .latitude,
-
-                            longitude:
-                                coordenadasRota[0]
-                                    .longitude,
-
-                            latitudeDelta:
-                                0.03,
-
-                            longitudeDelta:
-                                0.03,
-                        }}
-
-                        onMapReady={
-                            ajustarMapa
+                        onPress={() =>
+                            navigation.goBack()
                         }
                     >
-
-                        {/* ==================================
-                            LINHA DA ROTA
-                        ================================== */}
-
-                        <Polyline
-                            coordinates={
-                                coordenadasRota
+                        <Ionicons
+                            name="chevron-back"
+                            size={28}
+                            color={
+                                colors.black
                             }
-
-                            strokeWidth={5}
-
-                            strokeColor={
-                                colors.blue[500]
-                            }
-
-                            lineCap="round"
-                            lineJoin="round"
                         />
+                    </TouchableOpacity>
 
+                    <Text
+                        style={
+                            styles.headerTitle
+                        }
+                    >
+                        ROTA
+                    </Text>
 
-                        {/* ==================================
-                            MARCADORES
-                        ================================== */}
-
-                        {resultado.rotaOrdenada.map(
-                            (parada) => {
-
-                                const coordenada = {
-                                    latitude:
-                                        parada.latitude,
-
-                                    longitude:
-                                        parada.longitude,
-                                };
-
-
-                                // ==================================
-                                // ORIGEM
-                                // ==================================
-
-                                if (
-                                    parada.tipo ===
-                                    "ORIGEM"
-                                ) {
-
-                                    return (
-
-                                        <Marker
-                                            key={
-                                                `origem-${parada.ordem}`
-                                            }
-
-                                            coordinate={
-                                                coordenada
-                                            }
-
-                                            title="Origem"
-
-                                            description={
-                                                parada.enderecoFormatado
-                                            }
-
-                                            pinColor="green"
-                                        />
-
-                                    );
-                                }
-
-
-                                // ==================================
-                                // DESTINO FINAL
-                                // ==================================
-
-                                if (
-                                    parada.tipo ===
-                                    "DESTINO_FINAL"
-                                ) {
-
-                                    return (
-
-                                        <Marker
-                                            key={
-                                                `destino-${parada.ordem}`
-                                            }
-
-                                            coordinate={
-                                                coordenada
-                                            }
-
-                                            title="Destino final"
-
-                                            description={
-                                                parada.enderecoFormatado
-                                            }
-
-                                            pinColor="red"
-                                        />
-
-                                    );
-                                }
-
-
-                                // ==================================
-                                // ENTREGA
-                                // ==================================
-
-                                return (
-
-                                    <Marker
-                                        key={
-                                            `entrega-${parada.ordem}`
-                                        }
-
-                                        coordinate={
-                                            coordenada
-                                        }
-
-                                        title={
-                                            `Entrega ${
-                                                parada.ordem - 1
-                                            }`
-                                        }
-
-                                        description={
-                                            parada.enderecoFormatado
-                                        }
-
-                                        pinColor="orange"
-                                    />
-
-                                );
-
+                    <TouchableOpacity
+                        style={
+                            styles.headerButton
+                        }
+                        onPress={
+                            handleShare
+                        }
+                    >
+                        <Ionicons
+                            name="share-outline"
+                            size={23}
+                            color={
+                                colors.black
                             }
-                        )}
+                        />
+                    </TouchableOpacity>
+                </View>
 
-                    </MapView>
+                    {/* MAPA */}
 
-                ) : (
+                <View
+                    style={
+                        styles.mapContainer
+                    }
+                >
+                    {coordenadasRota.length >
+                        0 ? (
+                        <MapView
+                            ref={mapRef}
+                            style={
+                                styles.map
+                            }
+                            provider={
+                                PROVIDER_GOOGLE
+                            }
+                            initialRegion={{
+                                latitude:
+                                    coordenadasRota[0]
+                                        .latitude,
+                                longitude:
+                                    coordenadasRota[0]
+                                        .longitude,
+                                latitudeDelta:
+                                    0.03,
+                                longitudeDelta:
+                                    0.03,
+                            }}
+                            onMapReady={
+                                ajustarMapa
+                            }
+                        >
+                            {/* ==================================
+                                LINHA DA ROTA
+                            ================================== */}
 
-                    // ==========================================
-                    // MAPA SEM GEOMETRIA
-                    // ==========================================
+                            <Polyline
+                                coordinates={
+                                    coordenadasRota
+                                }
+                                strokeWidth={
+                                    5
+                                }
+                                strokeColor={
+                                    colors.blue[500]
+                                }
+                                lineCap="round"
+                                lineJoin="round"
+                            />
+
+                            {/* ==================================
+                                MARCADORES
+                            ================================== */}
+
+                            {resultado.rotaOrdenada.map(
+                                (
+                                    parada
+                                ) => {
+                                    const coordenada =
+                                    {
+                                        latitude:
+                                            parada.latitude,
+                                        longitude:
+                                            parada.longitude,
+                                    };
+
+                                    {/* ==========================
+                                        ORIGEM
+                                    ========================== */}
+
+                                    if (
+                                        parada.tipo ===
+                                        "ORIGEM"
+                                    ) {
+                                        return (
+                                            <Marker
+                                                key={`origem-${parada.ordem}`}
+                                                coordinate={
+                                                    coordenada
+                                                }
+                                                title="Origem"
+                                                description={
+                                                    parada.enderecoFormatado
+                                                }
+                                            >
+                                                <View
+                                                    style={
+                                                        styles.originMarker
+                                                    }
+                                                >
+                                                    <FontAwesome6
+                                                        name="location-dot"
+                                                        size={
+                                                            18
+                                                        }
+                                                        color={
+                                                            colors.white
+                                                        }
+                                                    />
+                                                </View>
+                                            </Marker>
+                                        );
+                                    }
+
+                                    {/* ==========================
+                                        DESTINO FINAL
+                                    ========================== */}
+
+                                    if (
+                                        parada.tipo ===
+                                        "DESTINO_FINAL"
+                                    ) {
+                                        return (
+                                            <Marker
+                                                key={`destino-${parada.ordem}`}
+                                                coordinate={
+                                                    coordenada
+                                                }
+                                                title="Destino final"
+                                                description={
+                                                    parada.enderecoFormatado
+                                                }
+                                            >
+                                                <View
+                                                    style={
+                                                        styles.destinationMarker
+                                                    }
+                                                >
+                                                    <FontAwesome6
+                                                        name="flag-checkered"
+                                                        size={
+                                                            16
+                                                        }
+                                                        color={
+                                                            colors.white
+                                                        }
+                                                    />
+                                                </View>
+                                            </Marker>
+                                        );
+                                    }
+                                   
+                                        // ENTREGA
+
+                                    const numeroEntrega =
+                                        resultado.rotaOrdenada
+                                            .filter(
+                                                (
+                                                    item
+                                                ) =>
+                                                    item.tipo ===
+                                                    "ENTREGA"
+                                            )
+                                            .findIndex(
+                                                (
+                                                    item
+                                                ) =>
+                                                    item.ordem ===
+                                                    parada.ordem
+                                            ) + 1;
+
+                                    return (
+                                        <Marker
+                                            key={`entrega-${parada.ordem}`}
+                                            coordinate={
+                                                coordenada
+                                            }
+                                            title={`Entrega ${numeroEntrega}`}
+                                            description={
+                                                parada.enderecoFormatado
+                                            }
+                                        >
+                                            <View
+                                                style={
+                                                    styles.deliveryMarker
+                                                }
+                                            >
+                                                <Text
+                                                    style={
+                                                        styles.deliveryMarkerText
+                                                    }
+                                                >
+                                                    {
+                                                        numeroEntrega
+                                                    }
+                                                </Text>
+                                            </View>
+                                        </Marker>
+                                    );
+                                }
+                            )}
+                        </MapView>
+                    ) : (
+                        <View
+                            style={
+                                styles.mapEmpty
+                            }
+                        >
+                            <Text
+                                style={
+                                    styles.mapEmptyText
+                                }
+                            >
+                                Não foi possível
+                                carregar o
+                                mapa.
+                            </Text>
+                        </View>
+                    )}
+                </View>
+
+                    {/* RESUMO */}
+
+                <View
+                    style={
+                        styles.infoContainer
+                    }
+                >
+                    {/* DISTÂNCIA */}
 
                     <View
                         style={
-                            styles.mapEmpty
+                            styles.infoCard
                         }
                     >
-
                         <Text
                             style={
-                                styles.mapEmptyText
+                                styles.infoLabel
                             }
                         >
-                            Não foi possível
-                            carregar a rota no mapa.
+                            Distância total
                         </Text>
 
                         <Text
                             style={
-                                styles.mapEmptyText
+                                styles.infoValue
                             }
                         >
-                            A API não retornou
-                            a geometria da rota.
+                            {resultado.distanciaTotalKm.toFixed(
+                                1
+                            )}{" "}
+                            km
                         </Text>
-
                     </View>
 
-                )}
+                    {/* TEMPO */}
 
-            </View>
-
-
-            {/* ==========================================
-                INFORMAÇÕES
-            ========================================== */}
-
-            <View
-                style={
-                    styles.infoContainer
-                }
-            >
-
-                {/* ==================================
-                    DISTÂNCIA
-                ================================== */}
-
-                <View
-                    style={
-                        styles.infoCard
-                    }
-                >
-
-                    <Text
+                    <View
                         style={
-                            styles.infoLabel
+                            styles.infoCard
                         }
                     >
-                        Distância total
-                    </Text>
+                        <Text
+                            style={
+                                styles.infoLabel
+                            }
+                        >
+                            Tempo estimado
+                        </Text>
 
-                    <Text
+                        <Text
+                            style={
+                                styles.infoValue
+                            }
+                        >
+                            {tempoTotal} min
+                        </Text>
+                    </View>
+
+                    {/* CONSUMO */}
+
+                    <View
                         style={
-                            styles.infoValue
+                            styles.infoCard
                         }
                     >
-                        {
-                            resultado.distanciaTotalKm.toFixed(
-                                1
-                            )
-                        }{" "}
-                        km
-                    </Text>
+                        <Text
+                            style={
+                                styles.infoLabel
+                            }
+                        >
+                            Consumo estimado
+                        </Text>
 
-                </View>
-
-
-                {/* ==================================
-                    TEMPO
-                ================================== */}
-
-                <View
-                    style={
-                        styles.infoCard
-                    }
-                >
-
-                    <Text
-                        style={
-                            styles.infoLabel
-                        }
-                    >
-                        Tempo estimado
-                    </Text>
-
-                    <Text
-                        style={
-                            styles.infoValue
-                        }
-                    >
-                        {tempoTotal} min
-                    </Text>
-
-                </View>
-
-
-                {/* ==================================
-                    CONSUMO
-                ================================== */}
-
-                <View
-                    style={
-                        styles.infoCard
-                    }
-                >
-
-                    <Text
-                        style={
-                            styles.infoLabel
-                        }
-                    >
-                        Consumo estimado
-                    </Text>
-
-                    <Text
-                        style={
-                            styles.infoValue
-                        }
-                    >
-                        {
-                            resultado.litrosConsumidos.toFixed(
+                        <Text
+                            style={
+                                styles.infoValue
+                            }
+                        >
+                            {resultado.litrosConsumidos.toFixed(
                                 2
-                            )
-                        }{" "}
-                        L
-                    </Text>
+                            )}{" "}
+                            L
+                        </Text>
+                    </View>
 
+                    {/* CUSTO */}
+
+                    <View
+                        style={
+                            styles.infoCard
+                        }
+                    >
+                        <Text
+                            style={
+                                styles.infoLabel
+                            }
+                        >
+                            Custo estimado
+                        </Text>
+
+                        <Text
+                            style={
+                                styles.infoValue
+                            }
+                        >
+                            R${" "}
+                            {resultado.custoEstimadoCombustivel.toFixed(
+                                2
+                            )}
+                        </Text>
+                    </View>
                 </View>
 
-
-                {/* ==================================
-                    CUSTO
-                ================================== */}
+                {/* ORDEM DAS PARADAS */}
 
                 <View
                     style={
-                        styles.infoCard
+                        styles.stopsContainer
                     }
                 >
-
                     <Text
                         style={
-                            styles.infoLabel
+                            styles.stopsTitle
                         }
                     >
-                        Custo estimado
+                        Ordem das paradas
                     </Text>
 
                     <Text
                         style={
-                            styles.infoValue
+                            styles.stopsSubtitle
                         }
                     >
-                        R${" "}
-
-                        {
-                            resultado.custoEstimadoCombustivel.toFixed(
-                                2
-                            )
-                        }
-
+                        Siga esta sequência para
+                        realizar a rota otimizada.
                     </Text>
 
+                    <View
+                        style={
+                            styles.timeline
+                        }
+                    >
+                        {resultado.rotaOrdenada.map(
+                            (
+                                parada,
+                                index
+                            ) => {
+                                const isLast =
+                                    index ===
+                                    resultado
+                                        .rotaOrdenada
+                                        .length -
+                                    1;
+
+                                const numeroEntrega =
+                                    resultado.rotaOrdenada
+                                        .filter(
+                                            (
+                                                item
+                                            ) =>
+                                                item.tipo ===
+                                                "ENTREGA"
+                                        )
+                                        .findIndex(
+                                            (
+                                                item
+                                            ) =>
+                                                item.ordem ===
+                                                parada.ordem
+                                        ) + 1;
+
+                                return (
+                                    <View
+                                        key={`stop-${parada.ordem}-${index}`}
+                                        style={
+                                            styles.stopItem
+                                        }
+                                    >
+                                        {/* LINHA */}
+
+                                        {!isLast && (
+                                            <View
+                                                style={
+                                                    styles.timelineLine
+                                                }
+                                            />
+                                        )}
+
+                                        {/* ÍCONE */}
+
+                                        <View
+                                            style={[
+                                                styles.stopIcon,
+                                                parada.tipo ===
+                                                "ORIGEM" &&
+                                                styles.stopIconOrigin,
+                                                parada.tipo ===
+                                                "ENTREGA" &&
+                                                styles.stopIconDelivery,
+                                                parada.tipo ===
+                                                "DESTINO_FINAL" &&
+                                                styles.stopIconDestination,
+                                            ]}
+                                        >
+                                            {parada.tipo ===
+                                                "ORIGEM" ? (
+                                                <FontAwesome6
+                                                    name="location-dot"
+                                                    size={
+                                                        15
+                                                    }
+                                                    color={
+                                                        colors.white
+                                                    }
+                                                />
+                                            ) : parada.tipo ===
+                                                "DESTINO_FINAL" ? (
+                                                <FontAwesome6
+                                                    name="flag-checkered"
+                                                    size={
+                                                        14
+                                                    }
+                                                    color={
+                                                        colors.white
+                                                    }
+                                                />
+                                            ) : (
+                                                <Text
+                                                    style={
+                                                        styles.stopNumber
+                                                    }
+                                                >
+                                                    {
+                                                        numeroEntrega
+                                                    }
+                                                </Text>
+                                            )}
+                                        </View>
+
+                                        {/* INFORMAÇÕES */}
+
+                                        <View
+                                            style={
+                                                styles.stopContent
+                                            }
+                                        >
+                                            <Text
+                                                style={
+                                                    styles.stopTitle
+                                                }
+                                            >
+                                                {parada.tipo ===
+                                                    "ORIGEM"
+                                                    ? "Origem"
+                                                    : parada.tipo ===
+                                                        "DESTINO_FINAL"
+                                                        ? "Destino final"
+                                                        : `Entrega ${numeroEntrega}`}
+                                            </Text>
+
+                                            <Text
+                                                style={
+                                                    styles.stopAddress
+                                                }
+                                            >
+                                                {
+                                                    parada.enderecoFormatado
+                                                }
+                                            </Text>
+
+                                            {parada.destinatario && (
+                                                <Text
+                                                    style={
+                                                        styles.stopRecipient
+                                                    }
+                                                >
+                                                    {
+                                                        parada.destinatario
+                                                    }
+                                                </Text>
+                                            )}
+                                        </View>
+                                    </View>
+                                );
+                            }
+                        )}
+                    </View>
                 </View>
 
-            </View>
+                    {/* BOTÃO INICIAR ROTA */}
 
-
-            {/* ==========================================
-                BOTÃO INICIAR ROTA
-            ========================================== */}
-
-            <TouchableOpacity
-                style={
-                    styles.startButton
-                }
-
-                onPress={
-                    handleStartRoute
-                }
-
-                activeOpacity={0.8}
-            >
-
-                <Text
+                <TouchableOpacity
                     style={
-                        styles.startButtonText
+                        styles.startButton
                     }
+                    onPress={
+                        handleStartRoute
+                    }
+                    activeOpacity={0.8}
                 >
-                    Iniciar rota
-                </Text>
+                    <FontAwesome6
+                        name="location-arrow"
+                        size={18}
+                        color={
+                            colors.white
+                        }
+                    />
 
-            </TouchableOpacity>
-
+                    <Text
+                        style={
+                            styles.startButtonText
+                        }
+                    >
+                        Iniciar rota
+                    </Text>
+                </TouchableOpacity>
+            </ScrollView>
         </SafeAreaView>
     );
 }

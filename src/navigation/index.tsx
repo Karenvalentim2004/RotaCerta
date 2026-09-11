@@ -25,6 +25,10 @@ import {
 } from "@/screens/RouteResult";
 
 import {
+    RouteMap,
+} from "@/screens/RouteMap";
+
+import {
     Vehicles,
 } from "@/screens/Vehicles";
 
@@ -55,6 +59,10 @@ export type RootStackParamList = {
     };
 
     Vehicles: undefined;
+
+    RouteMap: {
+        route: OptimizedRoute;
+    };
 };
 
 // ==========================================
@@ -95,7 +103,7 @@ export function Routes() {
                 if (autenticado) {
 
                     console.log(
-                        "🔐 Usuário autenticado. Abrindo Tabs."
+                        "Usuário autenticado. Abrindo Tabs."
                     );
 
                     setRotaInicial(
@@ -105,7 +113,7 @@ export function Routes() {
                 } else {
 
                     console.log(
-                        "🔓 Usuário não autenticado. Abrindo Login."
+                        "Usuário não autenticado. Abrindo Login."
                     );
 
                     setRotaInicial(
@@ -116,7 +124,7 @@ export function Routes() {
             } catch (error) {
 
                 console.error(
-                    "❌ Erro ao verificar autenticação:",
+                    "Erro ao verificar autenticação:",
                     error
                 );
 
@@ -197,6 +205,13 @@ export function Routes() {
                     name="Vehicles"
                     component={
                         Vehicles
+                    }
+                />
+
+                <Stack.Screen
+                    name="RouteMap"
+                    component={
+                        RouteMap
                     }
                 />
 

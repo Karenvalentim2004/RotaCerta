@@ -20,13 +20,18 @@ export interface RouteDestination {
 
 export interface RoutePoint {
     ordem: number;
+
     tipo:
         | "ORIGEM"
         | "ENTREGA"
         | "DESTINO_FINAL";
+
     enderecoFormatado: string;
+
     destinatario?: string | null;
+
     latitude: number;
+
     longitude: number;
 }
 
@@ -36,6 +41,7 @@ export interface RoutePoint {
 
 export interface RouteGeometry {
     type: "LineString";
+
     coordinates: [number, number][];
 }
 
@@ -46,14 +52,11 @@ export interface RouteGeometry {
 export interface OptimizedRoute {
     id?: number;
 
-    veiculoId?:
-        | number
-        | string
-        | null;
+    veiculoId?: number | string | null;
 
     distanciaTotalKm: number;
 
-    tempoDeslocamentoMinutos?: number;
+    tempoDeslocamentoMinutos: number;
 
     tempoParadasMinutos?: number;
 
@@ -67,7 +70,7 @@ export interface OptimizedRoute {
 
     rotaOrdenada: RoutePoint[];
 
-    geometria?: RouteGeometry;
+    geometria: RouteGeometry;
 }
 
 // ==========================================
@@ -106,8 +109,9 @@ export async function optimizeRoute(
     );
 
     try {
+
         // ==========================================
-        // HEADERS
+        // HEADERS AUTENTICADOS
         // ==========================================
 
         const headers =
@@ -122,13 +126,19 @@ export async function optimizeRoute(
                 API_URL,
                 {
                     method: "POST",
+
                     headers,
+
                     body: JSON.stringify({
                         localInicio,
+
                         destinoFinal,
+
                         veiculoId:
                             Number(veiculoId),
+
                         valorCombustivel,
+
                         entregas,
                     }),
                 }
@@ -152,10 +162,11 @@ export async function optimizeRoute(
         );
 
         // ==========================================
-        // ERRO
+        // ERRO DA API
         // ==========================================
 
         if (!response.ok) {
+
             throw new Error(
                 data?.error ||
                 "Erro ao otimizar a rota."
@@ -163,10 +174,53 @@ export async function optimizeRoute(
         }
 
         // ==========================================
+        // VALIDAÇÕES BÁSICAS
+        // ==========================================
+
+        if (
+            typeof data.distanciaTotalKm !==
+            "number"
+        ) {
+            throw new Error(
+                "A API não retornou a distância da rota."
+            );
+        }
+
+        if (
+            typeof data.tempoDeslocamentoMinutos !==
+            "number"
+        ) {
+            throw new Error(
+                "A API não retornou o tempo da rota."
+            );
+        }
+
+        if (
+            !data.geometria ||
+            !Array.isArray(
+                data.geometria.coordinates
+            )
+        ) {
+            throw new Error(
+                "A API não retornou a geometria da rota."
+            );
+        }
+
+        if (
+            !Array.isArray(
+                data.rotaOrdenada
+            )
+        ) {
+            throw new Error(
+                "A API não retornou as paradas da rota."
+            );
+        }
+
+        // ==========================================
         // RETORNO
         // ==========================================
 
-        return data;
+        return data as OptimizedRoute;
 
     } catch (error) {
 

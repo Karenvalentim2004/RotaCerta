@@ -3,9 +3,13 @@ import {
     Text,
     View,
     TouchableOpacity,
+    Alert,
 } from "react-native";
 
-import { useRef } from "react";
+import {
+    useRef,
+    useState,
+} from "react";
 
 import MapView, {
     Marker,
@@ -41,38 +45,84 @@ export function RouteMap({
     navigation,
 }: Props) {
 
+    // ==========================================
     // REFERÊNCIA DO MAPA
+    // ==========================================
+
     const mapRef =
         useRef<MapView>(null);
 
+    // ==========================================
     // ROTA
+    // ==========================================
+
     const resultado =
         route.params.route;
 
+    // ==========================================
     // PARADAS
+    // ==========================================
+
     const paradas: RoutePoint[] =
         resultado.rotaOrdenada ?? [];
 
+    // ==========================================
     // ENTREGAS
+    // ==========================================
+
     const entregas: RoutePoint[] =
         paradas.filter(
             (parada: RoutePoint) =>
                 parada.tipo === "ENTREGA"
         );
 
-    // PRÓXIMA ENTREGA
-    const proximaEntrega =
-        entregas[0];
+    // ==========================================
+    // ENTREGA ATUAL
+    // ==========================================
 
-    // NÚMERO DA PRÓXIMA ENTREGA
+    const [
+        entregaAtual,
+        setEntregaAtual,
+    ] = useState(0);
+
+    // ==========================================
+    // TODAS AS ENTREGAS CONCLUÍDAS?
+    // ==========================================
+
+    const rotaFinalizada =
+        entregaAtual >= entregas.length;
+
+    // ==========================================
+    // PRÓXIMA ENTREGA
+    // ==========================================
+
+    const proximaEntrega =
+        entregas[entregaAtual];
+
+    // ==========================================
+    // NÚMERO DA ENTREGA
+    // ==========================================
+
     const numeroEntrega =
         proximaEntrega
-            ? entregas.indexOf(
-                  proximaEntrega
-              ) + 1
-            : 0;
+            ? entregaAtual + 1
+            : entregas.length;
 
+    // ==========================================
+    // DESTINO FINAL
+    // ==========================================
+
+    const destinoFinal =
+        paradas.find(
+            (parada: RoutePoint) =>
+                parada.tipo ===
+                "DESTINO_FINAL"
+        );
+
+    // ==========================================
     // COORDENADAS DA GEOMETRIA
+    // ==========================================
+
     const coordenadasRota: LatLng[] =
         (
             resultado.geometria
@@ -114,8 +164,15 @@ export function RouteMap({
     const quantidadeEntregas =
         entregas.length;
 
+    const entregasRestantes =
+        Math.max(
+            quantidadeEntregas -
+            entregaAtual,
+            0
+        );
+
     const tempoParadas =
-        quantidadeEntregas * 5;
+        entregasRestantes * 5;
 
     const tempoRestante =
         tempoDeslocamento +
@@ -149,6 +206,32 @@ export function RouteMap({
     }
 
     // ==========================================
+    // CONCLUIR ENTREGA
+    // ==========================================
+
+    function handleCompleteDelivery() {
+
+        if (
+            entregaAtual <
+            entregas.length
+        ) {
+
+            setEntregaAtual(
+                entregaAtual + 1
+            );
+        }
+    }
+
+    // ==========================================
+    // FINALIZAR ROTA
+    // ==========================================
+
+    function handleFinishRoute() {
+
+        navigation.goBack();
+    }
+
+    // ==========================================
     // ENCERRAR ROTA
     // ==========================================
 
@@ -176,7 +259,9 @@ export function RouteMap({
             >
 
                 <TouchableOpacity
-                    style={styles.headerButton}
+                    style={
+                        styles.headerButton
+                    }
                     onPress={() =>
                         navigation.goBack()
                     }
@@ -193,7 +278,9 @@ export function RouteMap({
                 </TouchableOpacity>
 
                 <Text
-                    style={styles.headerTitle}
+                    style={
+                        styles.headerTitle
+                    }
                 >
                     ROTA EM ANDAMENTO
                 </Text>
@@ -201,30 +288,29 @@ export function RouteMap({
                 <TouchableOpacity
                     style={styles.headerButton}
                     onPress={() =>
-                        console.log(
-                            "Opções da rota"
+                        navigation.navigate(
+                            "RouteDetails",
+                            {
+                                route: resultado,
+                            }
                         )
                     }
                 >
-
                     <Ionicons
                         name="ellipsis-vertical"
                         size={22}
-                        color={
-                            colors.black
-                        }
+                        color={colors.black}
                     />
-
                 </TouchableOpacity>
 
             </View>
 
-            {/* ==========================================
-                MAPA
-            ========================================== */}
+            {/* MAPA*/}
 
             <View
-                style={styles.mapContainer}
+                style={
+                    styles.mapContainer
+                }
             >
 
                 {coordenadasRota.length > 0 ? (
@@ -254,9 +340,7 @@ export function RouteMap({
                         }
                     >
 
-                        {/* ==================================
-                            LINHA DA ROTA
-                        ================================== */}
+                        {/* LINHA DA ROTA */}
 
                         <Polyline
                             coordinates={
@@ -288,7 +372,9 @@ export function RouteMap({
                                         parada.longitude,
                                 };
 
+                                // ==================================
                                 // ORIGEM
+                                // ==================================
 
                                 if (
                                     parada.tipo ===
@@ -310,7 +396,9 @@ export function RouteMap({
                                     );
                                 }
 
+                                // ==================================
                                 // DESTINO FINAL
+                                // ==================================
 
                                 if (
                                     parada.tipo ===
@@ -332,12 +420,18 @@ export function RouteMap({
                                     );
                                 }
 
-                                // ENTREGA
+                                // ==================================
+                                // NÚMERO DA ENTREGA
+                                // ==================================
 
                                 const numero =
                                     entregas.indexOf(
                                         parada
                                     ) + 1;
+
+                                const concluida =
+                                    numero <=
+                                    entregaAtual;
 
                                 return (
                                     <Marker
@@ -352,9 +446,11 @@ export function RouteMap({
                                     >
 
                                         <View
-                                            style={
-                                                styles.deliveryMarker
-                                            }
+                                            style={[
+                                                styles.deliveryMarker,
+                                                concluida &&
+                                                styles.deliveryMarkerCompleted,
+                                            ]}
                                         >
 
                                             <Text
@@ -362,7 +458,9 @@ export function RouteMap({
                                                     styles.deliveryMarkerText
                                                 }
                                             >
-                                                {numero}
+                                                {concluida
+                                                    ? "✓"
+                                                    : numero}
                                             </Text>
 
                                         </View>
@@ -407,14 +505,20 @@ export function RouteMap({
                 }
             >
 
-                <View>
+                <View
+                    style={
+                        styles.nextStopContent
+                    }
+                >
 
                     <Text
                         style={
                             styles.nextStopLabel
                         }
                     >
-                        Próxima parada
+                        {rotaFinalizada
+                            ? "Destino final"
+                            : `Próxima parada • Entrega ${numeroEntrega}`}
                     </Text>
 
                     <Text
@@ -423,9 +527,11 @@ export function RouteMap({
                         }
                         numberOfLines={2}
                     >
-                        {proximaEntrega
-                            ? proximaEntrega.enderecoFormatado
-                            : "Nenhuma entrega pendente"}
+                        {rotaFinalizada
+                            ? destinoFinal?.enderecoFormatado ??
+                            "Destino final"
+                            : proximaEntrega?.enderecoFormatado ??
+                            "Nenhuma entrega pendente"}
                     </Text>
 
                 </View>
@@ -441,11 +547,11 @@ export function RouteMap({
                             styles.nextStopDistance
                         }
                     >
-                        {proximaEntrega
-                            ? `${distanciaRestante.toFixed(
-                                  1
-                              )} km`
-                            : "0 km"}
+                        {rotaFinalizada
+                            ? "Destino"
+                            : `${distanciaRestante.toFixed(
+                                1
+                            )} km`}
                     </Text>
 
                     <Ionicons
@@ -489,7 +595,11 @@ export function RouteMap({
                             styles.progressCount
                         }
                     >
-                        {numeroEntrega} /{" "}
+                        {Math.min(
+                            entregaAtual,
+                            quantidadeEntregas
+                        )}{" "}
+                        /{" "}
                         {quantidadeEntregas}
                     </Text>
 
@@ -507,15 +617,14 @@ export function RouteMap({
                             {
                                 width:
                                     quantidadeEntregas >
-                                    0
-                                        ? `${
-                                              Math.min(
-                                                  (numeroEntrega /
-                                                      quantidadeEntregas) *
-                                                      100,
-                                                  100
-                                              )
-                                          }%`
+                                        0
+                                        ? `${Math.min(
+                                            (entregaAtual /
+                                                quantidadeEntregas) *
+                                            100,
+                                            100
+                                        )
+                                        }%`
                                         : "0%",
                             },
                         ]}
@@ -589,28 +698,98 @@ export function RouteMap({
             </View>
 
             {/* ==========================================
+                AÇÃO PRINCIPAL
+            ========================================== */}
+
+            {!rotaFinalizada ? (
+
+                <TouchableOpacity
+                    style={
+                        styles.completeButton
+                    }
+                    onPress={
+                        handleCompleteDelivery
+                    }
+                    activeOpacity={0.8}
+                >
+
+                    <Ionicons
+                        name="checkmark-circle-outline"
+                        size={21}
+                        color={
+                            colors.white
+                        }
+                    />
+
+                    <Text
+                        style={
+                            styles.completeButtonText
+                        }
+                    >
+                        Concluir entrega
+                    </Text>
+
+                </TouchableOpacity>
+
+            ) : (
+
+                <TouchableOpacity
+                    style={
+                        styles.completeButton
+                    }
+                    onPress={
+                        handleFinishRoute
+                    }
+                    activeOpacity={0.8}
+                >
+
+                    <Ionicons
+                        name="flag-outline"
+                        size={21}
+                        color={
+                            colors.white
+                        }
+                    />
+
+                    <Text
+                        style={
+                            styles.completeButtonText
+                        }
+                    >
+                        Finalizar rota
+                    </Text>
+
+                </TouchableOpacity>
+
+            )}
+
+            {/* ==========================================
                 ENCERRAR ROTA
             ========================================== */}
 
-            <TouchableOpacity
-                style={
-                    styles.endButton
-                }
-                onPress={
-                    handleEndRoute
-                }
-                activeOpacity={0.8}
-            >
+            {!rotaFinalizada && (
 
-                <Text
+                <TouchableOpacity
                     style={
-                        styles.endButtonText
+                        styles.endButton
                     }
+                    onPress={
+                        handleEndRoute
+                    }
+                    activeOpacity={0.8}
                 >
-                    Encerrar Rota
-                </Text>
 
-            </TouchableOpacity>
+                    <Text
+                        style={
+                            styles.endButtonText
+                        }
+                    >
+                        Encerrar Rota
+                    </Text>
+
+                </TouchableOpacity>
+
+            )}
 
         </SafeAreaView>
     );

@@ -157,7 +157,7 @@ export function RouteResult({
                 }
             >
 
-                    {/* CABEÇALHO */}
+                {/* CABEÇALHO */}
 
                 <View
                     style={styles.header}
@@ -205,7 +205,7 @@ export function RouteResult({
                     </TouchableOpacity>
                 </View>
 
-                    {/* MAPA */}
+                {/* MAPA */}
 
                 <View
                     style={
@@ -347,8 +347,8 @@ export function RouteResult({
                                             </Marker>
                                         );
                                     }
-                                   
-                                        // ENTREGA
+
+                                    // ENTREGA
 
                                     const numeroEntrega =
                                         resultado.rotaOrdenada
@@ -417,7 +417,7 @@ export function RouteResult({
                     )}
                 </View>
 
-                    {/* RESUMO */}
+                {/* RESUMO */}
 
                 <View
                     style={
@@ -530,183 +530,8 @@ export function RouteResult({
                     </View>
                 </View>
 
-                {/* ORDEM DAS PARADAS */}
 
-                <View
-                    style={
-                        styles.stopsContainer
-                    }
-                >
-                    <Text
-                        style={
-                            styles.stopsTitle
-                        }
-                    >
-                        Ordem das paradas
-                    </Text>
-
-                    <Text
-                        style={
-                            styles.stopsSubtitle
-                        }
-                    >
-                        Siga esta sequência para
-                        realizar a rota otimizada.
-                    </Text>
-
-                    <View
-                        style={
-                            styles.timeline
-                        }
-                    >
-                        {resultado.rotaOrdenada.map(
-                            (
-                                parada,
-                                index
-                            ) => {
-                                const isLast =
-                                    index ===
-                                    resultado
-                                        .rotaOrdenada
-                                        .length -
-                                    1;
-
-                                const numeroEntrega =
-                                    resultado.rotaOrdenada
-                                        .filter(
-                                            (
-                                                item
-                                            ) =>
-                                                item.tipo ===
-                                                "ENTREGA"
-                                        )
-                                        .findIndex(
-                                            (
-                                                item
-                                            ) =>
-                                                item.ordem ===
-                                                parada.ordem
-                                        ) + 1;
-
-                                return (
-                                    <View
-                                        key={`stop-${parada.ordem}-${index}`}
-                                        style={
-                                            styles.stopItem
-                                        }
-                                    >
-                                        {/* LINHA */}
-
-                                        {!isLast && (
-                                            <View
-                                                style={
-                                                    styles.timelineLine
-                                                }
-                                            />
-                                        )}
-
-                                        {/* ÍCONE */}
-
-                                        <View
-                                            style={[
-                                                styles.stopIcon,
-                                                parada.tipo ===
-                                                "ORIGEM" &&
-                                                styles.stopIconOrigin,
-                                                parada.tipo ===
-                                                "ENTREGA" &&
-                                                styles.stopIconDelivery,
-                                                parada.tipo ===
-                                                "DESTINO_FINAL" &&
-                                                styles.stopIconDestination,
-                                            ]}
-                                        >
-                                            {parada.tipo ===
-                                                "ORIGEM" ? (
-                                                <FontAwesome6
-                                                    name="location-dot"
-                                                    size={
-                                                        15
-                                                    }
-                                                    color={
-                                                        colors.white
-                                                    }
-                                                />
-                                            ) : parada.tipo ===
-                                                "DESTINO_FINAL" ? (
-                                                <FontAwesome6
-                                                    name="flag-checkered"
-                                                    size={
-                                                        14
-                                                    }
-                                                    color={
-                                                        colors.white
-                                                    }
-                                                />
-                                            ) : (
-                                                <Text
-                                                    style={
-                                                        styles.stopNumber
-                                                    }
-                                                >
-                                                    {
-                                                        numeroEntrega
-                                                    }
-                                                </Text>
-                                            )}
-                                        </View>
-
-                                        {/* INFORMAÇÕES */}
-
-                                        <View
-                                            style={
-                                                styles.stopContent
-                                            }
-                                        >
-                                            <Text
-                                                style={
-                                                    styles.stopTitle
-                                                }
-                                            >
-                                                {parada.tipo ===
-                                                    "ORIGEM"
-                                                    ? "Origem"
-                                                    : parada.tipo ===
-                                                        "DESTINO_FINAL"
-                                                        ? "Destino final"
-                                                        : `Entrega ${numeroEntrega}`}
-                                            </Text>
-
-                                            <Text
-                                                style={
-                                                    styles.stopAddress
-                                                }
-                                            >
-                                                {
-                                                    parada.enderecoFormatado
-                                                }
-                                            </Text>
-
-                                            {parada.destinatario && (
-                                                <Text
-                                                    style={
-                                                        styles.stopRecipient
-                                                    }
-                                                >
-                                                    {
-                                                        parada.destinatario
-                                                    }
-                                                </Text>
-                                            )}
-                                        </View>
-                                    </View>
-                                );
-                            }
-                        )}
-                    </View>
-                </View>
-
-                    {/* BOTÃO INICIAR ROTA */}
+                {/* BOTÃO INICIAR ROTA */}
 
                 <TouchableOpacity
                     style={

@@ -1,5 +1,4 @@
 import "dotenv/config";
-
 import { Router } from "express";
 
 import {
@@ -9,44 +8,27 @@ import {
 } from "../services/orsService";
 
 import {
-    createRoute,
-} from "../services/routeService";
-
-import {
-    findVehicleById,
-} from "../services/vehicleService";
-
-import {
     authMiddleware,
     AuthenticatedRequest,
 } from "../middleware/authMiddleware";
 
-import {
-    optimizeRouteSchema,
-} from "../validators/optimizeRouteValidator";
+import { createRoute, } from "../services/routeService";
+import { findVehicleById, } from "../services/vehicleService";
+import {optimizeRouteSchema,} from "../validators/optimizeRouteValidator";
 
 
 interface GeocodedDelivery {
     id: number;
-
     original: any;
-
     endereco: string;
-
     latitude: number;
-
     longitude: number;
-
     label: string;
 }
 
-
 const router = Router();
 
-
-// ==========================================
 // FUNÇÃO PARA MONTAR ENDEREÇO
-// ==========================================
 
 function formatDeliveryAddress(
     entrega: any
@@ -64,10 +46,7 @@ function formatDeliveryAddress(
         .join(", ");
 }
 
-
-// ==========================================
 // OTIMIZAR ROTA
-// ==========================================
 
 router.post(
     "/",
@@ -79,9 +58,7 @@ router.post(
 
         try {
 
-            // ==========================================
             // 1. USUÁRIO AUTENTICADO
-            // ==========================================
 
             const usuarioId =
                 request.usuarioId;
@@ -94,10 +71,7 @@ router.post(
                 });
             }
 
-
-            // ==========================================
             // 2. VALIDAR DADOS
-            // ==========================================
 
             const validacao =
                 optimizeRouteSchema.safeParse(
@@ -122,10 +96,7 @@ router.post(
                 });
             }
 
-
-            // ==========================================
             // 3. DADOS VALIDADOS
-            // ==========================================
 
             const {
                 localInicio,
@@ -165,13 +136,10 @@ router.post(
                 entregas.length
             );
 
-
-            // ==========================================
             // 4. BUSCAR VEÍCULO
-            // ==========================================
 
             console.log(
-                "🚗 Buscando veículo..."
+                "Buscando veículo..."
             );
 
             const veiculo =
@@ -207,10 +175,7 @@ router.post(
                 "km/L"
             );
 
-
-            // ==========================================
             // 5. GEOCODIFICAR ORIGEM
-            // ==========================================
 
             console.log(
                 "📍 Localizando origem..."
@@ -228,9 +193,7 @@ router.post(
             );
 
 
-            // ==========================================
             // 6. GEOCODIFICAR DESTINO FINAL
-            // ==========================================
 
             console.log(
                 "📍 Localizando destino final..."
@@ -248,9 +211,7 @@ router.post(
             );
 
 
-            // ==========================================
             // 7. GEOCODIFICAR ENTREGAS
-            // ==========================================
 
             console.log(
                 "📍 Localizando entregas..."
@@ -315,10 +276,7 @@ router.post(
                 );
             }
 
-
-            // ==========================================
             // 8. OTIMIZAR ORDEM DAS ENTREGAS
-            // ==========================================
 
             console.log(
                 "🧠 Otimizando ordem das entregas..."
@@ -360,10 +318,7 @@ router.post(
                 ordemOtimizada.deliveryIds
             );
 
-
-            // ==========================================
             // 9. MONTAR ENTREGAS ORDENADAS
-            // ==========================================
 
             const entregasOrdenadas =
                 ordemOtimizada.deliveryIds
@@ -381,10 +336,7 @@ router.post(
                             entrega !== undefined
                     );
 
-
-            // ==========================================
             // 10. COORDENADAS DA ROTA
-            // ==========================================
 
             const coordenadasRota:
                 [number, number][] = [
@@ -401,9 +353,9 @@ router.post(
                             entrega.latitude,
 
                         ] as [
-                            number,
-                            number
-                        ]
+                                number,
+                                number
+                            ]
                     ),
 
                     [
@@ -412,10 +364,7 @@ router.post(
                     ],
                 ];
 
-
-            // ==========================================
             // 11. CALCULAR TRAJETO REAL
-            // ==========================================
 
             console.log(
                 "🛣️ Calculando trajeto pelas ruas..."
@@ -432,19 +381,13 @@ router.post(
                 "✅ Trajeto calculado"
             );
 
-
-            // ==========================================
             // 12. DISTÂNCIA
-            // ==========================================
 
             const distanciaTotalKm =
                 directions.distanciaMetros /
                 1000;
 
-
-            // ==========================================
             // 13. TEMPO
-            // ==========================================
 
             const tempoDeslocamentoMinutos =
                 Math.ceil(
@@ -463,10 +406,7 @@ router.post(
                 tempoDeslocamentoMinutos +
                 tempoParadasMinutos;
 
-
-            // ==========================================
             // 14. COMBUSTÍVEL
-            // ==========================================
 
             const litrosConsumidos =
                 distanciaTotalKm /
@@ -477,10 +417,7 @@ router.post(
                 litrosConsumidos *
                 valorCombustivel;
 
-
-            // ==========================================
             // 15. ROTA ORDENADA
-            // ==========================================
 
             const rotaOrdenada = [
 
@@ -548,10 +485,7 @@ router.post(
                 },
             ];
 
-
-            // ==========================================
             // 16. RESUMO
-            // ==========================================
 
             const resumoRota =
                 `Rota com ${entregas.length} entrega(s), ` +
@@ -559,10 +493,7 @@ router.post(
                 `e aproximadamente ${tempoTotalMinutos} minutos ` +
                 `considerando 5 minutos por parada.`;
 
-
-            // ==========================================
             // 17. PREPARAR ENTREGAS PARA O BANCO
-            // ==========================================
 
             const entregasParaSalvar =
                 entregasOrdenadas.map(
@@ -617,10 +548,7 @@ router.post(
                     })
                 );
 
-
-            // ==========================================
             // 18. SALVAR NO TURSO
-            // ==========================================
 
             console.log(
                 "💾 Salvando rota no Turso..."
@@ -674,10 +602,7 @@ router.post(
                 rotaSalva.id
             );
 
-
-            // ==========================================
             // 19. RESULTADO
-            // ==========================================
 
             const resultado = {
 

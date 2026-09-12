@@ -8,45 +8,19 @@ import {
     View,
 } from "react-native";
 
-import {
-    NavigationContainer,
-} from "@react-navigation/native";
-
-import {
-    createNativeStackNavigator,
-} from "@react-navigation/native-stack";
-
+import { NavigationContainer, } from "@react-navigation/native";
+import { createNativeStackNavigator, } from "@react-navigation/native-stack";
 import { Tabs } from "./Tabs";
-
 import { Login } from "@/screens/Login";
+import { RouteResult, } from "@/screens/RouteResult";
+import { RouteMap, } from "@/screens/RouteMap";
+import { RouteDetails } from "@/screens/RouteDetails";
+import { Vehicles, } from "@/screens/Vehicles";
+import { isAuthenticated, } from "@/services/authService";
+import { OptimizedRoute, } from "@/services/optimizeRoute";
+import { colors, } from "@/theme/colors";
 
-import {
-    RouteResult,
-} from "@/screens/RouteResult";
-
-import {
-    RouteMap,
-} from "@/screens/RouteMap";
-
-import {
-    Vehicles,
-} from "@/screens/Vehicles";
-
-import {
-    isAuthenticated,
-} from "@/services/authService";
-
-import {
-    OptimizedRoute,
-} from "@/services/optimizeRoute";
-
-import {
-    colors,
-} from "@/theme/colors";
-
-// ==========================================
 // TIPOS DE NAVEGAÇÃO
-// ==========================================
 
 export type RootStackParamList = {
 
@@ -63,20 +37,20 @@ export type RootStackParamList = {
     RouteMap: {
         route: OptimizedRoute;
     };
+
+    RouteDetails: {
+        route: OptimizedRoute;
+    };
 };
 
-// ==========================================
 // STACK
-// ==========================================
 
 const Stack =
     createNativeStackNavigator<
         RootStackParamList
     >();
 
-// ==========================================
 // ROTAS
-// ==========================================
 
 export function Routes() {
 
@@ -87,9 +61,7 @@ export function Routes() {
         "Login" | "Tabs" | null
     >(null);
 
-    // ==========================================
     // VERIFICAR AUTENTICAÇÃO
-    // ==========================================
 
     useEffect(() => {
 
@@ -138,9 +110,7 @@ export function Routes() {
 
     }, []);
 
-    // ==========================================
     // CARREGANDO
-    // ==========================================
 
     if (!rotaInicial) {
 
@@ -167,9 +137,7 @@ export function Routes() {
         );
     }
 
-    // ==========================================
     // NAVEGAÇÃO
-    // ==========================================
 
     return (
 
@@ -212,6 +180,13 @@ export function Routes() {
                     name="RouteMap"
                     component={
                         RouteMap
+                    }
+                />
+
+                <Stack.Screen
+                    name="RouteDetails"
+                    component={
+                        RouteDetails
                     }
                 />
 

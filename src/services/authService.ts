@@ -110,6 +110,76 @@ export async function getAuthHeaders() {
 
 }
 
+// ==========================================
+// LISTAR HISTÓRICO DE ROTAS
+// ==========================================
+
+export async function getRoutes() {
+
+    const headers =
+        await getAuthHeaders();
+
+    const response =
+        await fetch(
+            `${API_URL}/routes`,
+            {
+                method: "GET",
+                headers,
+            }
+        );
+
+    const data =
+        await response.json();
+
+    if (!response.ok) {
+
+        throw new Error(
+            data?.error ||
+            "Não foi possível carregar o histórico."
+        );
+
+    }
+
+    return data.rotas;
+
+}
+
+// ==========================================
+// BUSCAR UMA ROTA PELO ID
+// ==========================================
+
+export async function getRouteById(
+    id: number
+) {
+
+    const headers =
+        await getAuthHeaders();
+
+    const response =
+        await fetch(
+            `${API_URL}/routes/${id}`,
+            {
+                method: "GET",
+                headers,
+            }
+        );
+
+    const data =
+        await response.json();
+
+    if (!response.ok) {
+
+        throw new Error(
+            data?.error ||
+            "Não foi possível carregar a rota."
+        );
+
+    }
+
+    return data;
+
+}
+
 
 // ==========================================
 // LOGOUT

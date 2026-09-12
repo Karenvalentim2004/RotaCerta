@@ -6,13 +6,22 @@ import { colors } from "@/theme/colors";
 
 export const styles =
     StyleSheet.create({
+
+        // ==========================================
+        // CONTAINER
+        // ==========================================
+
         container: {
             flex: 1,
             backgroundColor:
                 colors.gray[100],
             paddingTop: 55,
-            paddingBottom: 40,
+            paddingBottom: 30,
         },
+
+        // ==========================================
+        // CABEÇALHO
+        // ==========================================
 
         header: {
             height: 64,
@@ -21,7 +30,6 @@ export const styles =
             justifyContent:
                 "space-between",
             paddingHorizontal: 16,
-
         },
 
         headerButton: {
@@ -38,7 +46,9 @@ export const styles =
             color: colors.black,
         },
 
+        // ==========================================
         // MAPA
+        // ==========================================
 
         mapContainer: {
             height: 220,
@@ -81,6 +91,11 @@ export const styles =
                 colors.white,
         },
 
+        deliveryMarkerCompleted: {
+            backgroundColor:
+                colors.gray[600],
+        },
+
         deliveryMarkerText: {
             color: colors.white,
             fontSize: 13,
@@ -115,6 +130,10 @@ export const styles =
             shadowRadius: 4,
         },
 
+        nextStopContent: {
+            flex: 1,
+        },
+
         nextStopLabel: {
             fontSize: 12,
             color: colors.gray[600],
@@ -125,13 +144,14 @@ export const styles =
             fontSize: 13,
             color: colors.black,
             fontWeight: "500",
-            maxWidth: 220,
+            maxWidth: 230,
         },
 
         nextStopRight: {
             flexDirection: "row",
             alignItems: "center",
             gap: 4,
+            marginLeft: 10,
         },
 
         nextStopDistance: {
@@ -182,9 +202,7 @@ export const styles =
                 colors.green[500],
         },
 
-        // ==========================================
         // INFORMAÇÕES
-        // ==========================================
 
         infoContainer: {
             flexDirection: "row",
@@ -224,14 +242,33 @@ export const styles =
             color: colors.black,
         },
 
-        // ==========================================
-        // ENCERRAR ROTA
-        // ==========================================
+        // CONCLUIR ENTREGA
 
-        endButton: {
+        completeButton: {
             marginHorizontal: 24,
             marginTop: 20,
             height: 48,
+            borderRadius: 12,
+            alignItems: "center",
+            justifyContent: "center",
+            flexDirection: "row",
+            gap: 8,
+            backgroundColor:
+                colors.green[500],
+        },
+
+        completeButtonText: {
+            fontSize: 15,
+            fontWeight: "700",
+            color: colors.white,
+        },
+
+        // ENCERRAR ROTA
+
+        endButton: {
+            marginHorizontal: 24,
+            marginTop: 10,
+            height: 44,
             borderRadius: 12,
             alignItems: "center",
             justifyContent: "center",
@@ -243,7 +280,7 @@ export const styles =
         },
 
         endButtonText: {
-            fontSize: 15,
+            fontSize: 14,
             fontWeight: "700",
             color: colors.red[500],
         },

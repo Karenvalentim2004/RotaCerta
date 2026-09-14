@@ -34,31 +34,28 @@ import {
     getRouteById,
 } from "@/services/authService";
 
+import type {
+    OptimizedRoute,
+    RoutePoint,
+} from "@/services/optimizeRoute";
+
 import { colors } from "@/theme/colors";
 import { styles } from "./styles";
 
 
 // ==========================================
-// TIPO DA ROTA
+// TIPO DA ROTA NO HISTÓRICO
 // ==========================================
 
 interface RouteHistory {
     id: number;
-
     data_rota: string;
-
     veiculo_id: number;
-
     origem: string;
-
     destino_final: string;
-
     distancia_total_km: number;
-
     tempo_total_minutos: number;
-
     litros_consumidos: number;
-
     custo_estimado: number;
 }
 
@@ -144,7 +141,7 @@ export function History() {
                 dados.map(
                     (
                         rota: any
-                    ) => ({
+                    ): RouteHistory => ({
 
                         id:
                             Number(
@@ -207,13 +204,11 @@ export function History() {
                 error
             );
 
-
             Alert.alert(
                 "Erro",
                 error?.message ||
                 "Não foi possível carregar o histórico."
             );
-
 
         } finally {
 
@@ -247,21 +242,16 @@ export function History() {
             return "--/--/----";
         }
 
-
         const dataObj =
             new Date(data);
-
 
         if (
             Number.isNaN(
                 dataObj.getTime()
             )
         ) {
-
             return data;
-
         }
-
 
         const dia =
             String(
@@ -282,9 +272,7 @@ export function History() {
         const ano =
             dataObj.getFullYear();
 
-
         return `${dia}/${mes}/${ano}`;
-
     }
 
 
@@ -300,21 +288,16 @@ export function History() {
             return "--:--";
         }
 
-
         const dataObj =
             new Date(data);
-
 
         if (
             Number.isNaN(
                 dataObj.getTime()
             )
         ) {
-
             return "--:--";
-
         }
-
 
         const hora =
             String(
@@ -332,9 +315,7 @@ export function History() {
                 "0"
             );
 
-
         return `${hora}:${minuto}`;
-
     }
 
 
@@ -350,7 +331,6 @@ export function History() {
             return "0 min";
         }
 
-
         const horas =
             Math.floor(
                 minutos / 60
@@ -359,27 +339,18 @@ export function History() {
         const minutosRestantes =
             minutos % 60;
 
-
         if (horas > 0) {
 
             if (
                 minutosRestantes === 0
             ) {
-
-                return `${horas},0hr`;
-
+                return `${horas}h`;
             }
 
-
-            return `${horas},${Math.round(
-                minutosRestantes / 60 * 10
-            )}hrs`;
-
+            return `${horas}h ${minutosRestantes}min`;
         }
 
-
         return `${minutos} min`;
-
     }
 
 
@@ -423,7 +394,6 @@ export function History() {
 
             }
 
-
             return rotas;
 
         }, [
@@ -447,6 +417,194 @@ export function History() {
         setFiltroAberto(
             false
         );
+
+    }
+
+
+    // ==========================================
+    // MONTAR ROTA PARA ROUTEDETAILS
+    // ==========================================
+
+    function montarRota(
+        dados: any
+    ): OptimizedRoute {
+
+        const rota =
+            dados.rota;
+
+        const entregas =
+            dados.entregas ?? [];
+
+
+        // ==========================================
+        // ORIGEM
+        // ==========================================
+
+        const origem: RoutePoint = {
+
+            ordem: 1,
+
+            tipo:
+                "ORIGEM",
+
+            enderecoFormatado:
+                String(
+                    rota.origem
+                ),
+
+            latitude:
+                Number(
+                    rota.latitude_origem ?? 0
+                ),
+
+            longitude:
+                Number(
+                    rota.longitude_origem ?? 0
+                ),
+
+        };
+
+
+        // ==========================================
+        // ENTREGAS
+        // ==========================================
+
+        const pontosEntrega: RoutePoint[] =
+            entregas.map(
+                (
+                    entrega: any
+                ): RoutePoint => ({
+
+                    ordem:
+                        Number(
+                            entrega.ordem
+                        ) + 1,
+
+                    tipo:
+                        "ENTREGA",
+
+                    enderecoFormatado:
+                        [
+                            entrega.rua,
+                            entrega.numero,
+                            entrega.bairro,
+                            entrega.cidade,
+                            entrega.estado,
+                        ]
+                            .filter(
+                                Boolean
+                            )
+                            .join(
+                                ", "
+                            ),
+
+                    destinatario:
+                        entrega.destinatario ??
+                        null,
+
+                    latitude:
+                        Number(
+                            entrega.latitude
+                        ),
+
+                    longitude:
+                        Number(
+                            entrega.longitude
+                        ),
+
+                })
+            );
+
+
+        // ==========================================
+        // DESTINO FINAL
+        // ==========================================
+
+        const destinoFinal: RoutePoint = {
+
+            ordem:
+                entregas.length + 2,
+
+            tipo:
+                "DESTINO_FINAL",
+
+            enderecoFormatado:
+                String(
+                    rota.destino_final
+                ),
+
+            latitude:
+                Number(
+                    rota.latitude_destino ?? 0
+                ),
+
+            longitude:
+                Number(
+                    rota.longitude_destino ?? 0
+                ),
+
+        };
+
+
+        // ==========================================
+        // RETORNO
+        // ==========================================
+
+        return {
+
+            id:
+                Number(
+                    rota.id
+                ),
+
+            veiculoId:
+                Number(
+                    rota.veiculo_id
+                ),
+
+            distanciaTotalKm:
+                Number(
+                    rota.distancia_total_km
+                ),
+
+            tempoDeslocamentoMinutos:
+                Number(
+                    rota.tempo_deslocamento_minutos
+                ),
+
+            tempoParadasMinutos:
+                Number(
+                    rota.tempo_paradas_minutos
+                ),
+
+            tempoTotalMinutos:
+                Number(
+                    rota.tempo_total_minutos
+                ),
+
+            custoEstimadoCombustivel:
+                Number(
+                    rota.custo_estimado
+                ),
+
+            litrosConsumidos:
+                Number(
+                    rota.litros_consumidos
+                ),
+
+            resumoRota:
+                "",
+
+            geometria:
+                rota.geometria,
+
+            rotaOrdenada: [
+                origem,
+                ...pontosEntrega,
+                destinoFinal,
+            ],
+
+        };
 
     }
 
@@ -478,143 +636,17 @@ export function History() {
             );
 
 
-            /*
-             * O backend retorna:
-             *
-             * {
-             *     rota: {...},
-             *     entregas: [...]
-             * }
-             *
-             * Aqui futuramente podemos
-             * montar a mesma estrutura
-             * usada pelo RouteResult.
-             */
+            const rotaCompleta =
+                montarRota(
+                    dados
+                );
 
 
             navigation.navigate(
                 "RouteDetails",
                 {
-                    route: {
-                        ...dados.rota,
-
-                        id:
-                            Number(
-                                dados.rota.id
-                            ),
-
-                        distanciaTotalKm:
-                            Number(
-                                dados.rota
-                                    .distancia_total_km
-                            ),
-
-                        tempoDeslocamentoMinutos:
-                            Number(
-                                dados.rota
-                                    .tempo_deslocamento_minutos
-                            ),
-
-                        tempoParadasMinutos:
-                            Number(
-                                dados.rota
-                                    .tempo_paradas_minutos
-                            ),
-
-                        tempoTotalMinutos:
-                            Number(
-                                dados.rota
-                                    .tempo_total_minutos
-                            ),
-
-                        litrosConsumidos:
-                            Number(
-                                dados.rota
-                                    .litros_consumidos
-                            ),
-
-                        custoEstimadoCombustivel:
-                            Number(
-                                dados.rota
-                                    .custo_estimado
-                            ),
-
-                        geometria:
-                            dados.rota
-                                .geometria,
-
-                        rotaOrdenada: [
-                            {
-                                ordem: 1,
-
-                                tipo:
-                                    "ORIGEM",
-
-                                enderecoFormatado:
-                                    dados.rota
-                                        .origem,
-                            },
-
-                            ...dados.entregas.map(
-                                (
-                                    entrega: any
-                                ) => ({
-
-                                    ordem:
-                                        Number(
-                                            entrega.ordem
-                                        ) + 1,
-
-                                    tipo:
-                                        "ENTREGA",
-
-                                    enderecoFormatado:
-                                        [
-                                            entrega.rua,
-                                            entrega.numero,
-                                            entrega.bairro,
-                                            entrega.cidade,
-                                            entrega.estado,
-                                        ]
-                                            .filter(
-                                                Boolean
-                                            )
-                                            .join(
-                                                ", "
-                                            ),
-
-                                    destinatario:
-                                        entrega
-                                            .destinatario ??
-                                        null,
-
-                                    latitude:
-                                        entrega
-                                            .latitude,
-
-                                    longitude:
-                                        entrega
-                                            .longitude,
-
-                                })
-                            ),
-
-                            {
-                                ordem:
-                                    dados.entregas.length +
-                                    2,
-
-                                tipo:
-                                    "DESTINO_FINAL",
-
-                                enderecoFormatado:
-                                    dados.rota
-                                        .destino_final,
-                            },
-
-                        ],
-
-                    } as any,
+                    route:
+                        rotaCompleta,
                 }
             );
 

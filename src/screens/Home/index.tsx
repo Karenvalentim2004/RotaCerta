@@ -47,12 +47,7 @@ export function Home() {
                     onPress={() => navigation.navigate("Histórico")}
                 />
 
-                <Card
-                    title="Favoritos"
-                    description="Suas rotas favoritas."
-                    icon="star-outline"
-                // onPress={() => navigation.navigate("Rotas")}
-                />
+                
             </ScrollView>
         </SafeAreaView>
     );

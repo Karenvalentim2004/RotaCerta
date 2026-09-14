@@ -131,39 +131,6 @@ export function Profile() {
                     />
                 </TouchableOpacity>
 
-                {/* NOTIFICAÇÕES */}
-
-                <TouchableOpacity
-                    style={styles.option}
-                    onPress={() => {
-                        console.log(
-                            "Ativar notificações"
-                        );
-                    }}
-                >
-                    <View style={styles.optionIcon}>
-                        <Ionicons
-                            name="notifications-outline"
-                            size={27}
-                            color={
-                                colors.blue[900]
-                            }
-                        />
-                    </View>
-
-                    <Text style={styles.optionText}>
-                        Ative as Notificações
-                    </Text>
-
-                    <Ionicons
-                        name="chevron-forward"
-                        size={23}
-                        color={
-                            colors.blue[900]
-                        }
-                    />
-                </TouchableOpacity>
-
                 {/* SAIR */}
 
                 <TouchableOpacity

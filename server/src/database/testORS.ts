@@ -11,7 +11,7 @@ async function testORS() {
             );
 
         console.log(
-            "✅ Endereço encontrado:"
+            "Endereço encontrado:"
         );
 
         console.log(resultado);
@@ -19,7 +19,7 @@ async function testORS() {
     } catch (error) {
 
         console.error(
-            "❌ Erro no teste ORS:",
+            "Erro no teste ORS:",
             error
         );
     }

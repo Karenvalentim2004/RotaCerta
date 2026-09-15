@@ -92,7 +92,7 @@ router.post(
         } catch (error) {
 
             console.error(
-                "❌ Erro ao cadastrar veículo:",
+                "Erro ao cadastrar veículo:",
                 error
             );
 

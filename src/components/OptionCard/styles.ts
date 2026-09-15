@@ -3,10 +3,10 @@ import { colors } from "../../theme/colors";
 
 export const styles = StyleSheet.create({
     container: {
-        width: 160,
+        width: "100%",
         backgroundColor: colors.white,
         borderRadius: 24,
-        padding: 22,
+        padding: 8,
         alignItems: "center",
         position: "relative",
         shadowColor: "#000",
@@ -15,7 +15,7 @@ export const styles = StyleSheet.create({
 
         shadowOffset: {
             width: 0,
-            height: 4,
+            height: 5,
         },
 
         elevation: 3,

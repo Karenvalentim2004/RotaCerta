@@ -20,13 +20,13 @@ async function resetDatabase() {
         `);
 
         console.log(
-            "🗑️ Tabelas antigas removidas."
+            "Tabelas antigas removidas."
         );
 
     } catch (error) {
 
         console.error(
-            "❌ Erro ao resetar banco:",
+            "Erro ao resetar banco:",
             error
         );
 

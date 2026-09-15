@@ -17,7 +17,7 @@ async function checkDatabase() {
 
     } catch (error) {
         console.error(
-            "❌ Erro ao verificar banco:",
+            "Erro ao verificar banco:",
             error
         );
     }

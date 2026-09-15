@@ -28,18 +28,14 @@ import {
     AnalyzedAddress,
 } from "@/services/analyzeImage";
 
-import {
-    optimizeRoute,
-} from "@/services/optimizeRoute";
+import {optimizeRoute,} from "@/services/optimizeRoute";
 
 import {
     getVehicles,
     Vehicle,
 } from "@/services/vehicleService";
 
-import {
-    RootStackParamList,
-} from "@/navigation";
+import {RootStackParamList,} from "@/navigation";
 
 import { colors } from "@/theme/colors";
 import { styles } from "./styles";
@@ -122,7 +118,7 @@ export function CreateRoute() {
             } catch (error) {
 
                 console.error(
-                    "❌ Erro ao carregar veículos:",
+                    "Erro ao carregar veículos:",
                     error
                 );
 
@@ -334,7 +330,7 @@ export function CreateRoute() {
             setLoading(true);
 
             console.log(
-                "🚀 Iniciando otimização..."
+                "Iniciando otimização..."
             );
 
             console.log(
@@ -369,7 +365,7 @@ export function CreateRoute() {
                 );
 
             console.log(
-                "✅ Rota otimizada:",
+                "Rota otimizada:",
                 resultado
             );
 
@@ -384,7 +380,7 @@ export function CreateRoute() {
         } catch (error) {
 
             console.error(
-                "❌ Erro ao otimizar rota:",
+                "Erro ao otimizar rota:",
                 error
             );
 

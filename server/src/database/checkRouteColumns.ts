@@ -6,7 +6,7 @@ async function checkRouteColumns() {
             PRAGMA table_info(rotas)
         `);
 
-        console.log("📋 Colunas da tabela rotas:");
+        console.log("Colunas da tabela rotas:");
 
         for (const row of result.rows) {
             console.log(
@@ -16,7 +16,7 @@ async function checkRouteColumns() {
 
     } catch (error) {
         console.error(
-            "❌ Erro ao verificar tabela:",
+            "Erro ao verificar tabela:",
             error
         );
     }

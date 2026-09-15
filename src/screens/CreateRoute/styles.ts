@@ -23,20 +23,20 @@ export const styles = StyleSheet.create({
         fontSize: 15,
         color: colors.gray[600],
         marginTop: 6,
-        marginBottom: 20,
+        marginBottom: 15,
         lineHeight: 21,
     },
 
     optionsContainer: {
-        flexDirection: "row",
+        flexDirection: "column",
         justifyContent: "space-between",
-        marginTop: 10,
-        marginBottom: 25,
+        marginTop: 5,
+        marginBottom: 30,
         gap: 12,
+
     },
 
     section: {
-        marginTop: 5,
         marginBottom: 18,
     },
 

@@ -76,41 +76,31 @@ export function RouteMap({
                 parada.tipo === "ENTREGA"
         );
 
-    // ==========================================
     // ENTREGA ATUAL
-    // ==========================================
 
     const [
         entregaAtual,
         setEntregaAtual,
     ] = useState(0);
 
-    // ==========================================
     // TODAS AS ENTREGAS CONCLUÍDAS?
-    // ==========================================
 
     const rotaFinalizada =
         entregaAtual >= entregas.length;
 
-    // ==========================================
     // PRÓXIMA ENTREGA
-    // ==========================================
 
     const proximaEntrega =
         entregas[entregaAtual];
 
-    // ==========================================
     // NÚMERO DA ENTREGA
-    // ==========================================
 
     const numeroEntrega =
         proximaEntrega
             ? entregaAtual + 1
             : entregas.length;
 
-    // ==========================================
     // DESTINO FINAL
-    // ==========================================
 
     const destinoFinal =
         paradas.find(
@@ -119,9 +109,7 @@ export function RouteMap({
                 "DESTINO_FINAL"
         );
 
-    // ==========================================
     // COORDENADAS DA GEOMETRIA
-    // ==========================================
 
     const coordenadasRota: LatLng[] =
         (
@@ -391,7 +379,7 @@ export function RouteMap({
                                             description={
                                                 parada.enderecoFormatado
                                             }
-                                            pinColor="green"
+                                            pinColor="black"
                                         />
                                     );
                                 }

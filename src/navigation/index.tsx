@@ -10,7 +10,7 @@ import {
 
 import { NavigationContainer, } from "@react-navigation/native";
 import { createNativeStackNavigator, } from "@react-navigation/native-stack";
-import { Tabs } from "./Tabs";
+import { Tabs } from "./tabs";
 import { Login } from "@/screens/Login";
 import { RouteResult, } from "@/screens/RouteResult";
 import { RouteMap, } from "@/screens/RouteMap";

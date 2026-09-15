@@ -10,13 +10,13 @@ async function addVehicleToRoutes() {
         `);
 
         console.log(
-            "✅ Coluna veiculo_id adicionada à tabela rotas."
+            "Coluna veiculo_id adicionada à tabela rotas."
         );
 
     } catch (error) {
 
         console.error(
-            "❌ Erro ao adicionar veiculo_id:",
+            "Erro ao adicionar veiculo_id:",
             error
         );
 

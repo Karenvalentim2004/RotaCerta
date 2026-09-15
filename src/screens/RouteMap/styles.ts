@@ -74,9 +74,7 @@ export const styles =
             color: colors.gray[700],
         },
 
-        // ==========================================
         // MARCADOR DE ENTREGA
-        // ==========================================
 
         deliveryMarker: {
             width: 30,

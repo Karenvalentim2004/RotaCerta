@@ -7,11 +7,11 @@ async function resetUsers() {
         `);
 
         console.log(
-            "🗑️ Usuários de teste removidos."
+            "Usuários de teste removidos."
         );
     } catch (error) {
         console.error(
-            "❌ Erro ao remover usuários:",
+            "Erro ao remover usuários:",
             error
         );
     }

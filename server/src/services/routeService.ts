@@ -125,10 +125,7 @@ export async function createRoute(
 
         }
 
-
-        // ==========================================
         // 3. RETORNAR A ROTA CRIADA
-        // ==========================================
 
         return {
             id: rotaId,
@@ -146,10 +143,7 @@ export async function createRoute(
     }
 }
 
-
-// ==========================================
 // CONSULTAR UMA ROTA
-// ==========================================
 
 export async function getRouteById(
     rotaId: number,
@@ -183,26 +177,19 @@ export async function getRouteById(
     });
 
 
-    // ==========================================
     // ROTA NÃO ENCONTRADA
-    // ==========================================
 
     if (routeResult.rows.length === 0) {
         return null;
     }
 
-
-    // ==========================================
     // PEGAR ROTA
-    // ==========================================
 
     const rota =
         routeResult.rows[0];
 
 
-    // ==========================================
     // CONVERTER GEOMETRIA
-    // ==========================================
 
     let geometria = null;
 
@@ -225,10 +212,7 @@ export async function getRouteById(
         }
     }
 
-
-    // ==========================================
     // BUSCAR ENTREGAS DA ROTA
-    // ==========================================
 
     const deliveryResult = await db.execute({
         sql: `
@@ -253,9 +237,7 @@ export async function getRouteById(
     });
 
 
-    // ==========================================
     // RETORNAR ROTA + ENTREGAS
-    // ==========================================
 
     return {
         rota: {
@@ -268,10 +250,7 @@ export async function getRouteById(
     };
 }
 
-
-// ==========================================
 // HISTÓRICO DE ROTAS
-// ==========================================
 
 export async function listRoutesByUser(
     usuarioId: number
@@ -299,9 +278,7 @@ export async function listRoutesByUser(
     return result.rows;
 }
 
-// ==========================================
 // EXCLUIR ROTA
-// ==========================================
 
 export async function deleteRoute(
     rotaId: number,

@@ -68,9 +68,7 @@ interface GeocodingCandidate {
     score: number;
 }
 
-// ==========================================
 // FUNÇÕES AUXILIARES
-// ==========================================
 
 function normalizarTexto(texto: string): string {
     return texto
@@ -94,9 +92,7 @@ function normalizarCidade(cidade: string): string {
         .trim();
 }
 
-// ==========================================
 // EXTRAIR INFORMAÇÕES DO ENDEREÇO
-// ==========================================
 
 function extrairDadosEndereco(endereco: string): {
     rua: string | null;
@@ -174,9 +170,7 @@ function extrairDadosEndereco(endereco: string): {
     };
 }
 
-// ==========================================
 // TEXTO DO RESULTADO
-// ==========================================
 
 function textoDoResultado(feature: PeliasFeature): string {
     const properties = feature.properties || {};
@@ -197,9 +191,7 @@ function textoDoResultado(feature: PeliasFeature): string {
     );
 }
 
-// ==========================================
 // PONTUAR RESULTADO
-// ==========================================
 
 function pontuarResultado(
     feature: PeliasFeature,
@@ -244,9 +236,7 @@ function pontuarResultado(
     return Math.max(0, pontuacao);
 }
 
-// ==========================================
 // VALIDAR RESULTADO
-// ==========================================
 
 function resultadoValido(
     feature: PeliasFeature,
@@ -280,9 +270,7 @@ function resultadoValido(
     return false;
 }
 
-// ==========================================
 // REQUISIÇÃO JSON
-// ==========================================
 
 async function requisicaoJson<T>(
     url: string,
@@ -298,9 +286,7 @@ async function requisicaoJson<T>(
     return response.json() as Promise<T>;
 }
 
-// ==========================================
 // GEOCODING
-// ==========================================
 
 export async function geocodeAddress(
     endereco: string

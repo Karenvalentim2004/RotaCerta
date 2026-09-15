@@ -41,13 +41,12 @@ export function Home() {
                 />
 
                 <Card
-                    title="Histórico"
+                    title="Histórico de rotas"
                     description="Acompanhe suas rotas realizadas."
                     icon="time-outline"
                     onPress={() => navigation.navigate("Histórico")}
                 />
 
-                
             </ScrollView>
         </SafeAreaView>
     );
